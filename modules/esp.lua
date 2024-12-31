@@ -1,4 +1,21 @@
-local Utils = require(loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/main/modules/utils.lua"))())
+-- Remove the loadstring require and use direct loading
+local Utils = {
+    CalculateBox = function(character)
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return nil end
+        
+        local size = character:GetExtentsSize()
+        local position = hrp.Position
+        
+        local topRight = game.Workspace.CurrentCamera:WorldToViewportPoint(position + Vector3.new(size.X/2, size.Y/2, 0))
+        local bottomLeft = game.Workspace.CurrentCamera:WorldToViewportPoint(position - Vector3.new(size.X/2, size.Y/2, 0))
+        
+        return {
+            TopRight = Vector2.new(topRight.X, topRight.Y),
+            BottomLeft = Vector2.new(bottomLeft.X, bottomLeft.Y)
+        }
+    end
+}
 
 local ESPObjects = {}
 local FOVCircle
@@ -72,22 +89,6 @@ local function CleanupESP(player)
     end
 end
 
-local function CalculateBox(character)
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return nil end
-    
-    local size = character:GetExtentsSize()
-    local position = hrp.Position
-    
-    local topRight = game.Workspace.CurrentCamera:WorldToViewportPoint(position + Vector3.new(size.X/2, size.Y/2, 0))
-    local bottomLeft = game.Workspace.CurrentCamera:WorldToViewportPoint(position - Vector3.new(size.X/2, size.Y/2, 0))
-    
-    return {
-        TopRight = Vector2.new(topRight.X, topRight.Y),
-        BottomLeft = Vector2.new(bottomLeft.X, bottomLeft.Y)
-    }
-end
-
 local function UpdateESP(Options)
     if not Options.ESPEnabled.Value then
         -- Hide all ESP objects
@@ -127,7 +128,7 @@ local function UpdateESP(Options)
                     -- Box ESP
                     if Options.BoxESP.Value then
                         local box = ESPObjects[player].box
-                        local boxCoordinates = CalculateBox(character)
+                        local boxCoordinates = Utils.CalculateBox(character)
                         if boxCoordinates then
                             box.Size = boxCoordinates.TopRight - boxCoordinates.BottomLeft
                             box.Position = boxCoordinates.BottomLeft
@@ -198,7 +199,7 @@ local function UpdateESP(Options)
                         ESPObjects[player].box.Visible = false
                         if Options.BoxESP.Value then
                             local corners = ESPObjects[player].corners
-                            local boxCoordinates = CalculateBox(character)
+                            local boxCoordinates = Utils.CalculateBox(character)
                             if boxCoordinates then
                                 local size = boxCoordinates.TopRight - boxCoordinates.BottomLeft
                                 local cornerSize = math.min(size.X, size.Y) * 0.2
@@ -247,7 +248,7 @@ local function UpdateESP(Options)
                     if Options.HealthBarESP.Value then
                         local healthBar = ESPObjects[player].healthBar
                         local healthBarOutline = ESPObjects[player].healthBarOutline
-                        local boxCoordinates = CalculateBox(character)
+                        local boxCoordinates = Utils.CalculateBox(character)
                         if boxCoordinates then
                             local health = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
                             local barHeight = boxCoordinates.TopRight.Y - boxCoordinates.BottomLeft.Y
