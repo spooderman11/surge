@@ -1,28 +1,24 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local ESP = {
     Config = {
-        Enabled = false,         -- Changed to false by default
-        BoxEnabled = false,      -- Changed to false by default
+        Enabled = false,
+        BoxEnabled = false,
         BoxColor = Color3.fromRGB(255, 255, 255),
-        HealthBarEnabled = false, -- Changed to false by default
-        TextEnabled = false,      -- Changed to false by default
+        HealthBarEnabled = false,
+        TextEnabled = false,
         TextColor = Color3.fromRGB(255, 255, 255),
         TextSize = 14,
-        ShowEquipped = false,     -- Changed to false by default
-        -- Add new tracer settings
+        ShowEquipped = false,
         TracerEnabled = false,
         TracerColor = Color3.fromRGB(255, 255, 255),
         TracerThickness = 1,
-        TracerTransparency = 1,
-        TracerPosition = "Down", -- "Up", "Middle", "Down", "Mouse"
-        -- Add FOV circle settings
+        TracerPosition = "Down",
         FOVEnabled = false,
         FOVColor = Color3.fromRGB(255, 255, 255),
         FOVRadius = 100,
-        FOVThickness = 1,
-        FOVTransparency = 1,
         FOVFollowMouse = false
     },
     PlayerData = {},
@@ -58,17 +54,16 @@ local ESP = {
                     drawings.HealthBarOutline.Visible = self.Config.Enabled and self.Config.HealthBarEnabled
                 end
             end
+            if drawingType == "tracer" or drawingType == "all" then
+                if drawings.Tracer then
+                    drawings.Tracer.Color = self.Config.TracerColor
+                    drawings.Tracer.Thickness = self.Config.TracerThickness
+                    drawings.Tracer.Visible = self.Config.Enabled and self.Config.TracerEnabled
+                end
+            end
         end
     end
 }
-
-ESP.FOVCircle = Drawing.new("Circle")
-ESP.FOVCircle.Visible = false
-ESP.FOVCircle.Color = ESP.Config.FOVColor
-ESP.FOVCircle.Thickness = ESP.Config.FOVThickness
-ESP.FOVCircle.Transparency = ESP.Config.FOVTransparency
-ESP.FOVCircle.NumSides = 100
-ESP.FOVCircle.Radius = ESP.Config.FOVRadius
 
 local function HasRequiredBodyParts(character)
     local requiredParts = {"Head", "Torso", "HumanoidRootPart", "Right Arm", "Left Arm", "Right Leg", "Left Leg"}
@@ -99,8 +94,8 @@ local function CreateDrawings(player)
         HealthBarOutline = Drawing.new("Square"),
         NameText = Drawing.new("Text"),
         RobloxName = Drawing.new("Text"),
-        EquipText = Drawing.new("Text"), -- New drawing for equipped items
-        Tracer = Drawing.new("Line")
+        EquipText = Drawing.new("Text"),
+        Tracer = Drawing.new("Line") -- New drawing for tracers
     }
     
     -- Box settings
@@ -133,11 +128,10 @@ local function CreateDrawings(player)
     drawings.EquipText.Outline = true
     drawings.EquipText.Visible = false
     
-    -- Add tracer settings
-    drawings.Tracer.Visible = false
-    drawings.Tracer.Color = ESP.Config.TracerColor
+    -- Tracer settings
     drawings.Tracer.Thickness = ESP.Config.TracerThickness
-    drawings.Tracer.Transparency = ESP.Config.TracerTransparency
+    drawings.Tracer.Color = ESP.Config.TracerColor
+    drawings.Tracer.Visible = false
     
     ESP.PlayerData[player] = drawings
 end
@@ -174,24 +168,6 @@ local function GetIngameName(player)
 end
 
 local function UpdateESP()
-    -- Update FOV Circle
-    ESP.FOVCircle.Visible = ESP.Config.FOVEnabled
-    if ESP.Config.FOVEnabled then
-        if ESP.Config.FOVFollowMouse then
-            local mousePos = game:GetService("UserInputService"):GetMouseLocation()
-            ESP.FOVCircle.Position = mousePos
-        else
-            ESP.FOVCircle.Position = Vector2.new(
-                game.Workspace.CurrentCamera.ViewportSize.X / 2,
-                game.Workspace.CurrentCamera.ViewportSize.Y / 2
-            )
-        end
-        ESP.FOVCircle.Color = ESP.Config.FOVColor
-        ESP.FOVCircle.Radius = ESP.Config.FOVRadius
-        ESP.FOVCircle.Thickness = ESP.Config.FOVThickness
-        ESP.FOVCircle.Transparency = ESP.Config.FOVTransparency
-    end
-
     for player, drawings in pairs(ESP.PlayerData) do
         if player.Character 
             and player.Character:FindFirstChild("HumanoidRootPart") 
@@ -263,31 +239,25 @@ local function UpdateESP()
                     end
                 end
 
-                -- Add tracer update logic
-                if ESP.Config.TracerEnabled and onScreen then
-                    local tracer = drawings.Tracer
-                    local startPos = Vector2.new()
-                    
-                    -- Calculate tracer start position
-                    if ESP.Config.TracerPosition == "Mouse" then
-                        startPos = game:GetService("UserInputService"):GetMouseLocation()
-                    else
-                        local viewportSize = game.Workspace.CurrentCamera.ViewportSize
-                        if ESP.Config.TracerPosition == "Up" then
-                            startPos = Vector2.new(viewportSize.X/2, 0)
-                        elseif ESP.Config.TracerPosition == "Middle" then
-                            startPos = Vector2.new(viewportSize.X/2, viewportSize.Y/2)
-                        else -- Down
-                            startPos = Vector2.new(viewportSize.X/2, viewportSize.Y)
-                        end
+                -- Update tracers
+                if ESP.Config.TracerEnabled then
+                    local tracerStartPos = Vector2.new()
+                    if ESP.Config.TracerPosition == "Down" then
+                        tracerStartPos = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                    elseif ESP.Config.TracerPosition == "Middle" then
+                        tracerStartPos = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
+                    elseif ESP.Config.TracerPosition == "Up" then
+                        tracerStartPos = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 0)
+                    elseif ESP.Config.TracerPosition == "Mouse" then
+                        local mousePos = UserInputService:GetMouseLocation()
+                        tracerStartPos = Vector2.new(mousePos.X, mousePos.Y)
                     end
-                    
-                    tracer.From = startPos
-                    tracer.To = Vector2.new(vector.X, vector.Y)
-                    tracer.Color = ESP.Config.TracerColor
-                    tracer.Thickness = ESP.Config.TracerThickness
-                    tracer.Transparency = ESP.Config.TracerTransparency
-                    tracer.Visible = true
+
+                    drawings.Tracer.From = tracerStartPos
+                    drawings.Tracer.To = Vector2.new(vector.X, vector.Y)
+                    drawings.Tracer.Color = ESP.Config.TracerColor
+                    drawings.Tracer.Thickness = ESP.Config.TracerThickness
+                    drawings.Tracer.Visible = true
                 else
                     drawings.Tracer.Visible = false
                 end
@@ -311,13 +281,26 @@ local function UpdateESP()
             drawings.Tracer.Visible = false
         end
     end
-end
 
-local function CleanupESP()
-    -- ...existing cleanup code...
-    if ESP.FOVCircle then
-        ESP.FOVCircle:Remove()
-        ESP.FOVCircle = nil
+    -- Update FOV Circle
+    if ESP.Config.FOVEnabled then
+        if not ESP.FOVCircle then
+            ESP.FOVCircle = Drawing.new("Circle")
+            ESP.FOVCircle.NumSides = 100
+            ESP.FOVCircle.Thickness = 1
+            ESP.FOVCircle.Filled = false
+        end
+        ESP.FOVCircle.Visible = true
+        ESP.FOVCircle.Color = ESP.Config.FOVColor
+        ESP.FOVCircle.Radius = ESP.Config.FOVRadius
+        if ESP.Config.FOVFollowMouse then
+            local mousePos = UserInputService:GetMouseLocation()
+            ESP.FOVCircle.Position = Vector2.new(mousePos.X, mousePos.Y)
+        else
+            ESP.FOVCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
+        end
+    elseif ESP.FOVCircle then
+        ESP.FOVCircle.Visible = false
     end
 end
 

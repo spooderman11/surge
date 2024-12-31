@@ -22,11 +22,6 @@ local SpeedModule = loadModule("https://raw.githubusercontent.com/spooderman11/s
 local Aimbot = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/aimbot.lua")
 local FlyModule = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/fly.lua")
 
--- Add this after ESP module loading
-if not ESP then
-    warn("ESP module failed to load!")
-    return
-end
 local function kick(reason)
     game.Players.LocalPlayer:Kick(reason)
 end
@@ -329,6 +324,27 @@ do
         Rounding = 0
     })
 
+    -- Add Tracer and FOV Circle options
+    local TracerToggle = Tabs.Esp:AddToggle("TracerESP", {
+        Title = "Tracer ESP",
+        Default = ESP.Config.TracerEnabled
+    })
+
+    local TracerColor = Tabs.Esp:AddColorpicker("TracerColor", {
+        Title = "Tracer Color",
+        Default = ESP.Config.TracerColor
+    })
+
+    local FOVCircleToggle = Tabs.Esp:AddToggle("FOVCircle", {
+        Title = "FOV Circle",
+        Default = ESP.Config.FOVCircleEnabled
+    })
+
+    local FOVCircleColor = Tabs.Esp:AddColorpicker("FOVCircleColor", {
+        Title = "FOV Circle Color",
+        Default = ESP.Config.FOVCircleColor
+    })
+
     Options.PlayerESP = EspToggle
     Options.ShowHeldESP = ShowHeldToggle
     Options.BoxESP = BoxToggle
@@ -337,6 +353,10 @@ do
     Options.NameESP = TextToggle
     Options.TextColor = TextColor
     Options.TextSize = TextSize
+    Options.TracerESP = TracerToggle
+    Options.TracerColor = TracerColor
+    Options.FOVCircle = FOVCircleToggle
+    Options.FOVCircleColor = FOVCircleColor
 
     EspToggle:OnChanged(function(Value)
         ESP.Config.Enabled = Value
@@ -378,6 +398,27 @@ do
         ESP:UpdateDrawing("text")
     end)
 
+    -- Add Tracer and FOV Circle handlers
+    TracerToggle:OnChanged(function(Value)
+        ESP.Config.TracerEnabled = Value
+        ESP:UpdateDrawing("tracer")
+    end)
+
+    TracerColor:OnChanged(function(Value)
+        ESP.Config.TracerColor = Value
+        ESP:UpdateDrawing("tracer")
+    end)
+
+    FOVCircleToggle:OnChanged(function(Value)
+        ESP.Config.FOVCircleEnabled = Value
+        ESP:UpdateDrawing("fov")
+    end)
+
+    FOVCircleColor:OnChanged(function(Value)
+        ESP.Config.FOVCircleColor = Value
+        ESP:UpdateDrawing("fov")
+    end)
+
     Options.PlayerESP:SetValue(ESP.Config.Enabled)
     Options.BoxESP:SetValue(ESP.Config.BoxEnabled)
     Options.BoxColor:SetValue(ESP.Config.BoxColor)
@@ -385,103 +426,10 @@ do
     Options.NameESP:SetValue(ESP.Config.TextEnabled)
     Options.TextColor:SetValue(ESP.Config.TextColor)
     Options.TextSize:SetValue(ESP.Config.TextSize)
-
-    local TracerSection = Tabs.Esp:AddSection("Tracers")
-    
-    local TracerToggle = TracerSection:AddToggle("TracerESP", {
-        Title = "Enable Tracers",
-        Default = ESP.Config.TracerEnabled
-    })
-
-    local TracerPosition = TracerSection:AddDropdown("TracerPosition", {
-        Title = "Tracer Position",
-        Values = {"Down", "Middle", "Up", "Mouse"},
-        Default = "Down", -- Changed from number to string
-        Multi = false
-    })
-
-    local TracerColor = TracerSection:AddColorpicker("TracerColor", {
-        Title = "Tracer Color",
-        Default = ESP.Config.TracerColor
-    })
-
-    local TracerThickness = TracerSection:AddSlider("TracerThickness", {
-        Title = "Tracer Thickness",
-        Default = ESP.Config.TracerThickness,
-        Min = 1,
-        Max = 5,
-        Rounding = 1
-    })
-
-    local TracerTransparency = TracerSection:AddSlider("TracerTransparency", {
-        Title = "Tracer Transparency",
-        Default = ESP.Config.TracerTransparency,
-        Min = 0,
-        Max = 1,
-        Rounding = 2
-    })
-
-    local FOVSection = Tabs.Esp:AddSection("FOV Circle")
-
-    local FOVToggle = FOVSection:AddToggle("FOVEnabled", {
-        Title = "Show FOV Circle",
-        Default = ESP.Config.FOVEnabled
-    })
-
-    local FOVFollowMouse = FOVSection:AddToggle("FOVFollowMouse", {
-        Title = "Follow Mouse",
-        Default = ESP.Config.FOVFollowMouse
-    })
-
-    local FOVColor = FOVSection:AddColorpicker("FOVColor", {
-        Title = "FOV Color",
-        Default = ESP.Config.FOVColor
-    })
-
-    local FOVRadius = FOVSection:AddSlider("FOVRadius", {
-        Title = "FOV Radius",
-        Default = ESP.Config.FOVRadius,
-        Min = 0,
-        Max = 500,
-        Rounding = 0
-    })
-
-    -- Add callbacks for new controls
-    TracerToggle:OnChanged(function(Value)
-        ESP.Config.TracerEnabled = Value
-    end)
-
-    TracerPosition:OnChanged(function(Value)
-        ESP.Config.TracerPosition = Value
-    end)
-
-    TracerColor:OnChanged(function(Value)
-        ESP.Config.TracerColor = Value
-    end)
-
-    TracerThickness:OnChanged(function(Value)
-        ESP.Config.TracerThickness = Value
-    end)
-
-    TracerTransparency:OnChanged(function(Value)
-        ESP.Config.TracerTransparency = Value
-    end)
-
-    FOVToggle:OnChanged(function(Value)
-        ESP.Config.FOVEnabled = Value
-    end)
-
-    FOVFollowMouse:OnChanged(function(Value)
-        ESP.Config.FOVFollowMouse = Value
-    end)
-
-    FOVColor:OnChanged(function(Value)
-        ESP.Config.FOVColor = Value
-    end)
-
-    FOVRadius:OnChanged(function(Value)
-        ESP.Config.FOVRadius = Value
-    end)
+    Options.TracerESP:SetValue(ESP.Config.TracerEnabled)
+    Options.TracerColor:SetValue(ESP.Config.TracerColor)
+    Options.FOVCircle:SetValue(ESP.Config.FOVCircleEnabled)
+    Options.FOVCircleColor:SetValue(ESP.Config.FOVCircleColor)
 end
 
 Window:SelectTab(1)
