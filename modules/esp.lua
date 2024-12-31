@@ -1,4 +1,4 @@
-print(isfolder("modules") and "Modules folder exists" or "Modules folder does not exist")
+print("Hi from code")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
