@@ -493,7 +493,7 @@ do
 
     Options.PlayerESP:SetValue(ESP.Config.Enabled)
     Options.BoxESP:SetValue(ESP.Config.BoxEnabled)
-    Options.BoxColor:SetValue(ESP.Config.BoxColor)
+    -- Options.BoxColor:SetValue(ESP.Config.BoxColor)
     Options.HealthBar:SetValue(ESP.Config.HealthBarEnabled)
     Options.NameESP:SetValue(ESP.Config.TextEnabled)
     Options.TextColor:SetValue(ESP.Config.TextColor)
