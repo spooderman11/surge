@@ -17,6 +17,25 @@ local Utils = {
     end
 }
 
+local function CalculateStaticBox(character)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+    
+    local size = Vector2.new(4, 6) -- Static size in studs
+    local pos = hrp.Position
+    
+    local headPos = game.Workspace.CurrentCamera:WorldToViewportPoint(pos + Vector3.new(0, size.Y/2, 0))
+    local feetPos = game.Workspace.CurrentCamera:WorldToViewportPoint(pos - Vector3.new(0, size.Y/2, 0))
+    
+    local height = math.abs(headPos.Y - feetPos.Y)
+    local width = height * 0.6 -- Maintain aspect ratio
+    
+    return {
+        TopRight = Vector2.new(headPos.X + width/2, headPos.Y),
+        BottomLeft = Vector2.new(headPos.X - width/2, feetPos.Y)
+    }
+end
+
 local ESPObjects = {}
 local FOVCircle
 
@@ -158,7 +177,14 @@ local function UpdateESP(Options)
                     -- Box ESP
                     if Options.BoxESP.Value then
                         local box = ESPObjects[player].box
-                        local boxCoordinates = Utils.CalculateBox(character)
+                        local boxCoordinates
+                        
+                        if Options.StaticESP.Value then
+                            boxCoordinates = CalculateStaticBox(character)
+                        else
+                            boxCoordinates = Utils.CalculateBox(character)
+                        end
+                        
                         if boxCoordinates then
                             box.Size = boxCoordinates.TopRight - boxCoordinates.BottomLeft
                             box.Position = boxCoordinates.BottomLeft

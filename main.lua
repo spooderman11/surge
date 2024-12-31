@@ -36,6 +36,12 @@ do
         Default = false
     })
 
+    local StaticESP = Tabs.ESP:AddToggle("StaticESP", {
+        Title = "Static Box Size",
+        Description = "Use fixed size for ESP boxes",
+        Default = false
+    })
+
     local NameESP = Tabs.ESP:AddToggle("NameESP", {
         Title = "Name ESP",
         Default = false
