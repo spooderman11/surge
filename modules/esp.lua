@@ -57,39 +57,31 @@ local ESPSettings = {
     TextOutline = true,
     HealthBarThickness = 2,
     HealthBarOffset = 6,
+    ChamsEnabled = false,
     ChamsColor = Color3.fromRGB(255, 0, 0),
     ChamsTransparency = 0.5,
     ChamsFillColor = Color3.fromRGB(255, 0, 0),
-    ChamsFillTransparency = 0.8,
+    ChamsFillTransparency = 0.8
 }
 
-local ChamsObjects = {}
+local ChamsFolder = Instance.new("Folder")
+ChamsFolder.Name = "ChamsFolder"
+ChamsFolder.Parent = game:GetService("CoreGui")
 
-local function CreateChams(character)
-    if not character then return end
+local function CreateChams(player)
+    if not player.Character then return nil end
     
-    local chams = {
-        Outline = Instance.new("Highlight"),
-        Fill = Instance.new("Highlight")
-    }
+    local highlight = Instance.new("Highlight")
+    highlight.Name = player.Name .. "_Chams"
+    highlight.FillColor = ESPSettings.ChamsFillColor
+    highlight.FillTransparency = ESPSettings.ChamsFillTransparency
+    highlight.OutlineColor = ESPSettings.ChamsColor
+    highlight.OutlineTransparency = ESPSettings.ChamsTransparency
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Adornee = player.Character
+    highlight.Parent = ChamsFolder
     
-    -- Setup outline highlight
-    chams.Outline.FillTransparency = 1
-    chams.Outline.OutlineTransparency = ESPSettings.ChamsTransparency
-    chams.Outline.OutlineColor = ESPSettings.ChamsColor
-    chams.Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    chams.Outline.Adornee = character
-    chams.Outline.Parent = game.CoreGui
-    
-    -- Setup fill highlight
-    chams.Fill.OutlineTransparency = 1
-    chams.Fill.FillTransparency = ESPSettings.ChamsFillTransparency
-    chams.Fill.FillColor = ESPSettings.ChamsFillColor
-    chams.Fill.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    chams.Fill.Adornee = character
-    chams.Fill.Parent = game.CoreGui
-    
-    return chams
+    return highlight
 end
 
 local function CreateESP(player)
@@ -129,29 +121,33 @@ local function InitESP(player)
         tracer = CreateLine(),
         distance = CreateESP(player),
         healthBar = CreateBox(),
-        healthBarOutline = CreateBox()
+        healthBarOutline = CreateBox(),
+        chams = CreateChams(player)
     }
-    ChamsObjects[player] = CreateChams(player.Character)
 end
 
 local function CleanupESP(player)
     if ESPObjects[player] then
-        for _, object in pairs(ESPObjects[player]) do
+        for key, object in pairs(ESPObjects[player]) do
             pcall(function()
-                if object and object.Remove then
-                    object:Remove()
+                if key == "chams" then
+                    if object and object.Parent then
+                        object:Destroy()
+                    end
+                elseif type(object) == "table" then
+                    for _, subObject in pairs(object) do
+                        if subObject and subObject.Remove then
+                            subObject:Remove()
+                        end
+                    end
+                else
+                    if object and object.Remove then
+                        object:Remove()
+                    end
                 end
             end)
         end
         ESPObjects[player] = nil
-    end
-    
-    if ChamsObjects[player] then
-        pcall(function()
-            ChamsObjects[player].Outline:Destroy()
-            ChamsObjects[player].Fill:Destroy()
-        end)
-        ChamsObjects[player] = nil
     end
 end
 
@@ -200,6 +196,23 @@ local function UpdateESP(Options)
             end
         end
         return
+    end
+
+    -- Update Chams settings
+    if Options.ChamsEnabled then
+        ESPSettings.ChamsEnabled = Options.ChamsEnabled.Value
+    end
+    if Options.ChamsColor then
+        ESPSettings.ChamsColor = Options.ChamsColor.Value
+    end
+    if Options.ChamsTransparency then
+        ESPSettings.ChamsTransparency = Options.ChamsTransparency.Value
+    end
+    if Options.ChamsFillColor then
+        ESPSettings.ChamsFillColor = Options.ChamsFillColor.Value
+    end
+    if Options.ChamsFillTransparency then
+        ESPSettings.ChamsFillTransparency = Options.ChamsFillTransparency.Value
     end
 
     -- Main ESP update loop
@@ -333,25 +346,23 @@ local function UpdateESP(Options)
         end
 
         -- Chams
-        if Options.ChamsEnabled and Options.ChamsEnabled.Value then
-            if not ChamsObjects[player] or 
-               (ChamsObjects[player] and not ChamsObjects[player].Outline.Parent) then
-                ChamsObjects[player] = CreateChams(player.Character)
+        if ESPSettings.ChamsEnabled then
+            if not ESPObjects[player] or not ESPObjects[player].chams or not ESPObjects[player].chams.Parent then
+                if ESPObjects[player] then
+                    ESPObjects[player].chams = CreateChams(player)
+                end
             end
             
-            if ChamsObjects[player] then
-                ChamsObjects[player].Outline.OutlineColor = Options.ChamsColor.Value
-                ChamsObjects[player].Outline.OutlineTransparency = 1 - Options.ChamsTransparency.Value
-                ChamsObjects[player].Fill.FillColor = Options.ChamsFillColor.Value
-                ChamsObjects[player].Fill.FillTransparency = 1 - Options.ChamsFillTransparency.Value
+            if ESPObjects[player] and ESPObjects[player].chams then
+                ESPObjects[player].chams.FillColor = ESPSettings.ChamsFillColor
+                ESPObjects[player].chams.FillTransparency = ESPSettings.ChamsFillTransparency
+                ESPObjects[player].chams.OutlineColor = ESPSettings.ChamsColor
+                ESPObjects[player].chams.OutlineTransparency = ESPSettings.ChamsTransparency
             end
         else
-            if ChamsObjects[player] then
-                pcall(function()
-                    ChamsObjects[player].Outline:Destroy()
-                    ChamsObjects[player].Fill:Destroy()
-                end)
-                ChamsObjects[player] = nil
+            if ESPObjects[player] and ESPObjects[player].chams then
+                ESPObjects[player].chams:Destroy()
+                ESPObjects[player].chams = nil
             end
         end
     end
@@ -376,6 +387,10 @@ local function RemoveFOVCircle()
         end
     end)
 end
+
+game:GetService("Players").LocalPlayer.CharacterRemoving:Connect(function()
+    ChamsFolder:Destroy()
+end)
 
 return {
     InitESP = InitESP,
