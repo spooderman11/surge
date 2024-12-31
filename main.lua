@@ -6,6 +6,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 
 -- Fix module loading
 local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/main/modules/esp.lua"))()
+local SpeedModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/main/modules/speed.lua"))()
 
 local Window = Fluent:CreateWindow({
     Title = "surge.lua v." .. VERSION,
@@ -19,7 +20,8 @@ local Window = Fluent:CreateWindow({
 
 local Tabs = {
     ESP = Window:AddTab({ Title = "ESP", Icon = "eye" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+    Player = Window:AddTab({ Title = "Player", Icon = "settings" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "user-round" })
 }
 
 local Options = Fluent.Options
@@ -184,6 +186,36 @@ do
 
     TextOutline:OnChanged(function(Value)
         ESP.Settings.TextOutline = Value
+    end)
+end
+
+-- Speed Settings in Player Tab
+do
+    local SpeedEnabled = Tabs.Player:AddToggle("SpeedEnabled", {
+        Title = "Enable Speed",
+        Default = false
+    })
+
+    local SpeedValue = Tabs.Player:AddSlider("SpeedValue", {
+        Title = "Speed Value",
+        Default = 10,
+        Min = 1,
+        Max = 50,
+        Rounding = 0
+    })
+
+    SpeedEnabled:OnChanged(function(Value)
+        if Value then
+            SpeedModule.SetSpeed(SpeedValue.Value)
+        else
+            SpeedModule.SetSpeed(0)
+        end
+    end)
+
+    SpeedValue:OnChanged(function(Value)
+        if SpeedEnabled.Value then
+            SpeedModule.SetSpeed(Value)
+        end
     end)
 end
 
