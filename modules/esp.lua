@@ -122,177 +122,172 @@ local function CleanupAllESP()
 end
 
 local function UpdateESP(Options)
-    if not Options or not Options.ESPEnabled then return end
-    
-    -- Hide ESP if disabled
+    -- Early return if no options
+    if not Options then return end
+
+    -- Update ESP objects based on settings first
+    for _, objects in pairs(ESPObjects) do
+        -- Update box properties
+        if objects.box then
+            objects.box.Thickness = ESPSettings.BoxThickness
+            objects.box.Transparency = ESPSettings.BoxTransparency
+        end
+        -- Update tracer properties
+        if objects.tracer then
+            objects.tracer.Thickness = ESPSettings.TracerThickness
+            objects.tracer.Transparency = ESPSettings.TracerTransparency
+        end
+        -- Update text properties
+        if objects.name then
+            objects.name.Size = Options.FontSize.Value
+            objects.name.Outline = ESPSettings.TextOutline
+        end
+        if objects.distance then
+            objects.distance.Size = Options.FontSize.Value
+            objects.distance.Outline = ESPSettings.TextOutline
+        end
+    end
+
+    -- If ESP is disabled, hide all objects
     if not Options.ESPEnabled.Value then
         for _, objects in pairs(ESPObjects) do
-            pcall(function()
-                for _, object in pairs(objects) do
-                    if type(object) == "table" then
-                        for _, corner in pairs(object) do
-                            if corner and corner.Visible ~= nil then
-                                corner.Visible = false
-                            end
-                        end
-                    elseif object and object.Visible ~= nil then
-                        object.Visible = false
-                    end
+            for key, object in pairs(objects) do
+                if type(object) ~= "table" then
+                    object.Visible = false
                 end
-            end)
+            end
         end
         return
     end
 
+    -- Main ESP update loop
     for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-        if player ~= game:GetService("Players").LocalPlayer then
-            if not ESPObjects[player] then
-                InitESP(player)
-            end
+        if player == game:GetService("Players").LocalPlayer then continue end
 
-            local character = player.Character
-            if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") then
-                local humanoidRootPart = character.HumanoidRootPart
-                local humanoid = character.Humanoid
-                local head = character:FindFirstChild("Head")
-                local vector, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(humanoidRootPart.Position)
+        -- Initialize ESP objects if they don't exist
+        if not ESPObjects[player] then
+            InitESP(player)
+        end
 
-                -- Calculate distance
-                local distance = (game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
-
-                if onScreen and distance <= Options.ESPDistance.Value then
-                    local espColor = Options.ESPColor.Value
-
-                    -- Box ESP
-                    if Options.BoxESP.Value then
-                        local box = ESPObjects[player].box
-                        local boxCoordinates
-                        
-                        if Options.StaticESP.Value then
-                            boxCoordinates = CalculateStaticBox(character)
-                        else
-                            boxCoordinates = Utils.CalculateBox(character)
-                        end
-                        
-                        if boxCoordinates then
-                            box.Size = boxCoordinates.TopRight - boxCoordinates.BottomLeft
-                            box.Position = boxCoordinates.BottomLeft
-                            box.Color = espColor
-                            box.Visible = true
-                        end
-                    else
-                        ESPObjects[player].box.Visible = false
-                    end
-
-                    -- Name ESP
-                    if Options.NameESP.Value then
-                        local nameEsp = ESPObjects[player].name
-                        nameEsp.Text = player.Name
-                        nameEsp.Position = Vector2.new(vector.X, vector.Y - 40)
-                        nameEsp.Color = espColor
-                        nameEsp.Size = Options.FontSize.Value
-                        nameEsp.Font = FontStyles[Options.FontStyle.Value]
-                        nameEsp.Visible = true
-                    else
-                        ESPObjects[player].name.Visible = false
-                    end
-
-                    -- Distance ESP
-                    if Options.DistanceESP.Value then
-                        local distanceEsp = ESPObjects[player].distance
-                        distanceEsp.Text = math.floor(distance) .. " studs"
-                        distanceEsp.Position = Vector2.new(vector.X, vector.Y + 20)
-                        distanceEsp.Color = espColor
-                        distanceEsp.Size = Options.FontSize.Value
-                        distanceEsp.Font = FontStyles[Options.FontStyle.Value]
-                        distanceEsp.Visible = true
-                    else
-                        ESPObjects[player].distance.Visible = false
-                    end
-
-                    -- Tracers
-                    if Options.TracerESP.Value then
-                        local tracer = ESPObjects[player].tracer
-                        local startPos = Vector2.new()
-
-                        -- Set tracer start position based on selection
-                        if Options.TracerPosition.Value == "Down" then
-                            startPos = Vector2.new(game.Workspace.CurrentCamera.ViewportSize.X / 2, game.Workspace.CurrentCamera.ViewportSize.Y)
-                        elseif Options.TracerPosition.Value == "Middle" then
-                            startPos = Vector2.new(game.Workspace.CurrentCamera.ViewportSize.X / 2, game.Workspace.CurrentCamera.ViewportSize.Y / 2)
-                        elseif Options.TracerPosition.Value == "Up" then
-                            startPos = Vector2.new(game.Workspace.CurrentCamera.ViewportSize.X / 2, 0)
-                        elseif Options.TracerPosition.Value == "Mouse" then
-                            local mousePos = game:GetService("UserInputService"):GetMouseLocation()
-                            startPos = Vector2.new(mousePos.X, mousePos.Y)
-                        end
-
-                        tracer.From = startPos
-                        tracer.To = Vector2.new(vector.X, vector.Y)
-                        tracer.Color = espColor
-                        tracer.Visible = true
-                    else
-                        ESPObjects[player].tracer.Visible = false
-                    end
-
-                    -- ESP Type handling
-                    if Options.ESPType.Value == "Box" then
-                        ESPObjects[player].box.Visible = Options.BoxESP.Value
-                    else
-                        ESPObjects[player].box.Visible = false
-                    end
-
-                    -- Health Bar
-                    if Options.HealthBarESP.Value then
-                        local healthBar = ESPObjects[player].healthBar
-                        local healthBarOutline = ESPObjects[player].healthBarOutline
-                        local boxCoordinates = Utils.CalculateBox(character)
-                        if boxCoordinates then
-                            local health = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
-                            local barHeight = boxCoordinates.TopRight.Y - boxCoordinates.BottomLeft.Y
-
-                            healthBarOutline.Size = Vector2.new(4, barHeight)
-                            healthBarOutline.Position = Vector2.new(boxCoordinates.BottomLeft.X - 6, boxCoordinates.BottomLeft.Y)
-                            healthBarOutline.Visible = true
-                            healthBarOutline.Color = Color3.new(0, 0, 0)
-
-                            healthBar.Size = Vector2.new(2, barHeight * health)
-                            healthBar.Position = Vector2.new(boxCoordinates.BottomLeft.X - 5, boxCoordinates.BottomLeft.Y + (barHeight * (1 - health)))
-                            healthBar.Visible = true
-                            healthBar.Color = Color3.fromHSV(health * 0.3, 1, 1)
-                        end
-                    else
-                        ESPObjects[player].healthBar.Visible = false
-                        ESPObjects[player].healthBarOutline.Visible = false
-                    end
-                else
-                    -- Hide ESP if player is off screen or too far
-                    for _, object in pairs(ESPObjects[player]) do
-                        if type(object) == "table" then
-                            for _, subObject in pairs(object) do
-                                subObject.Visible = false
-                            end
-                        else
-                            object.Visible = false
-                        end
+        local character = player.Character
+        if not character then 
+            -- Hide ESP if character doesn't exist
+            if ESPObjects[player] then
+                for _, object in pairs(ESPObjects[player]) do
+                    if type(object) ~= "table" then
+                        object.Visible = false
                     end
                 end
             end
+            continue 
         end
-    end
 
-    -- Update FOV Circle
-    if FOVCircle then
-        FOVCircle.Visible = Options.FOVEnabled.Value
-        if Options.FOVEnabled.Value then
-            if Options.FOVFollowMouse.Value then
-                local mousePos = game:GetService("UserInputService"):GetMouseLocation()
-                FOVCircle.Position = Vector2.new(mousePos.X, mousePos.Y)
-            else
-                FOVCircle.Position = Vector2.new(game.Workspace.CurrentCamera.ViewportSize.X / 2, game.Workspace.CurrentCamera.ViewportSize.Y / 2)
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character:FindFirstChild("Humanoid")
+        
+        if not humanoidRootPart or not humanoid then continue end
+
+        local vector, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(humanoidRootPart.Position)
+        local distance = (game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
+
+        -- Hide ESP if player is too far or offscreen
+        if not onScreen or distance > Options.ESPDistance.Value then
+            for _, object in pairs(ESPObjects[player]) do
+                if type(object) ~= "table" then
+                    object.Visible = false
+                end
             end
-            FOVCircle.Radius = Options.FOVRadius.Value
-            FOVCircle.Color = Options.FOVColor.Value
+            continue
+        end
+
+        local espColor = Options.ESPColor.Value
+
+        -- Box ESP
+        if Options.BoxESP.Value and Options.ESPType.Value == "Box" then
+            local box = ESPObjects[player].box
+            local boxCoordinates = Options.StaticESP.Value and CalculateStaticBox(character) or Utils.CalculateBox(character)
+            
+            if boxCoordinates then
+                box.Size = boxCoordinates.TopRight - boxCoordinates.BottomLeft
+                box.Position = boxCoordinates.BottomLeft
+                box.Color = espColor
+                box.Visible = true
+            end
+        else
+            ESPObjects[player].box.Visible = false
+        end
+
+        -- Name ESP
+        if Options.NameESP.Value then
+            local nameEsp = ESPObjects[player].name
+            nameEsp.Text = player.Name
+            nameEsp.Position = Vector2.new(vector.X, vector.Y - 40)
+            nameEsp.Color = espColor
+            nameEsp.Visible = true
+        else
+            ESPObjects[player].name.Visible = false
+        end
+
+        -- Distance ESP
+        if Options.DistanceESP.Value then
+            local distanceEsp = ESPObjects[player].distance
+            distanceEsp.Text = math.floor(distance) .. " studs"
+            distanceEsp.Position = Vector2.new(vector.X, vector.Y + 20)
+            distanceEsp.Color = espColor
+            distanceEsp.Visible = true
+        else
+            ESPObjects[player].distance.Visible = false
+        end
+
+        -- Tracers
+        if Options.TracerESP.Value then
+            local tracer = ESPObjects[player].tracer
+            local startPos = Vector2.new()
+            
+            if Options.TracerPosition.Value == "Mouse" then
+                startPos = game:GetService("UserInputService"):GetMouseLocation()
+            else
+                local viewportSize = game.Workspace.CurrentCamera.ViewportSize
+                if Options.TracerPosition.Value == "Top" then
+                    startPos = Vector2.new(viewportSize.X/2, 0)
+                elseif Options.TracerPosition.Value == "Middle" then
+                    startPos = Vector2.new(viewportSize.X/2, viewportSize.Y/2)
+                else -- Bottom
+                    startPos = Vector2.new(viewportSize.X/2, viewportSize.Y)
+                end
+            end
+            
+            tracer.From = startPos
+            tracer.To = Vector2.new(vector.X, vector.Y)
+            tracer.Color = espColor
+            tracer.Visible = true
+        else
+            ESPObjects[player].tracer.Visible = false
+        end
+
+        -- Health Bar
+        if Options.HealthBarESP.Value then
+            local healthBar = ESPObjects[player].healthBar
+            local healthBarOutline = ESPObjects[player].healthBarOutline
+            local boxCoordinates = Utils.CalculateBox(character)
+            
+            if boxCoordinates then
+                local health = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+                local barHeight = boxCoordinates.TopRight.Y - boxCoordinates.BottomLeft.Y
+
+                healthBarOutline.Size = Vector2.new(4, barHeight)
+                healthBarOutline.Position = Vector2.new(boxCoordinates.BottomLeft.X - 6, boxCoordinates.BottomLeft.Y)
+                healthBarOutline.Visible = true
+                healthBarOutline.Color = Color3.new(0, 0, 0)
+
+                healthBar.Size = Vector2.new(2, barHeight * health)
+                healthBar.Position = Vector2.new(boxCoordinates.BottomLeft.X - 5, boxCoordinates.BottomLeft.Y + (barHeight * (1 - health)))
+                healthBar.Visible = true
+                healthBar.Color = Color3.fromHSV(health * 0.3, 1, 1)
+            end
+        else
+            ESPObjects[player].healthBar.Visible = false
+            ESPObjects[player].healthBarOutline.Visible = false
         end
     end
 end
