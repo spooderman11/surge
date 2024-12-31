@@ -17,6 +17,14 @@ local Utils = {
     end
 }
 
+local FontStyles = {
+    ["Default"] = 2,      -- SourceSans (Default Roblox font)
+    ["Monospace"] = 3,    -- Code/Monospace font
+    ["Cartoony"] = 1,     -- Comic-style font
+    ["Modern"] = 0,       -- Thinner, cleaner font
+    ["Bold"] = 4          -- Heavy/Bold font
+}
+
 local function CalculateStaticBox(character)
     local hrp = character:FindFirstChild("HumanoidRootPart")
     if not hrp then return nil end
@@ -44,7 +52,7 @@ local function CreateESP(player)
     esp.Visible = false
     esp.Center = true
     esp.Outline = true
-    esp.Font = 2
+    esp.Font = FontStyles["Default"] -- Default font
     esp.Size = 13
     esp.Color = Color3.new(1, 1, 1)
     return esp
@@ -202,6 +210,7 @@ local function UpdateESP(Options)
                         nameEsp.Position = Vector2.new(vector.X, vector.Y - 40)
                         nameEsp.Color = espColor
                         nameEsp.Size = Options.FontSize.Value
+                        nameEsp.Font = FontStyles[Options.FontStyle.Value]
                         nameEsp.Visible = true
                     else
                         ESPObjects[player].name.Visible = false
@@ -214,6 +223,7 @@ local function UpdateESP(Options)
                         distanceEsp.Position = Vector2.new(vector.X, vector.Y + 20)
                         distanceEsp.Color = espColor
                         distanceEsp.Size = Options.FontSize.Value
+                        distanceEsp.Font = FontStyles[Options.FontStyle.Value]
                         distanceEsp.Visible = true
                     else
                         ESPObjects[player].distance.Visible = false

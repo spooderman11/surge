@@ -94,6 +94,13 @@ do
         Rounding = 0
     })
 
+    local FontStyle = Tabs.ESP:AddDropdown("FontStyle", {
+        Title = "Font Style",
+        Description = "Choose text font style",
+        Values = {"Default", "Monospace", "Cartoony", "Modern", "Bold"},
+        Default = "Default"
+    })
+
     local HealthBarESP = Tabs.ESP:AddToggle("HealthBarESP", {
         Title = "Health Bar",
         Default = false
