@@ -18,13 +18,11 @@ local Utils = {
 }
 
 local FontStyles = {
-    ["Default"] = Drawing.Fonts.UI,          -- Default Roblox font
-    ["Gotham"] = Enum.Font.Gotham,          -- Clean, modern Roblox font
-    ["LuckiestGuy"] = Enum.Font.LuckiestGuy, -- Fun, bold font
-    ["Highway"] = Enum.Font.Highway,         -- Sleek, readable font
-    ["SourceSans"] = Enum.Font.SourceSans,   -- Classic Roblox font
-    ["Ubuntu"] = Enum.Font.Ubuntu,           -- Professional font
-    ["Cartoon"] = Enum.Font.Cartoon          -- Fun, cartoony font
+    ["Default"] = 0,    -- Legacy/Default font
+    ["UI"] = 1,         -- Roblox UI font
+    ["System"] = 2,     -- System font
+    ["Monospace"] = 3,  -- Monospace/Code font
+    ["Bold"] = 4        -- Bold version
 }
 
 local function CalculateStaticBox(character)
@@ -54,7 +52,7 @@ local function CreateESP(player)
     esp.Visible = false
     esp.Center = true
     esp.Outline = true
-    esp.Font = FontStyles["Default"] -- Default font
+    esp.Font = FontStyles["Default"]
     esp.Size = 13
     esp.Color = Color3.new(1, 1, 1)
     return esp
