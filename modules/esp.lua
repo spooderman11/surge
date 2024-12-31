@@ -18,11 +18,13 @@ local Utils = {
 }
 
 local FontStyles = {
-    ["Default"] = 2,      -- SourceSans (Default Roblox font)
-    ["Monospace"] = 3,    -- Code/Monospace font
-    ["Cartoony"] = 1,     -- Comic-style font
-    ["Modern"] = 0,       -- Thinner, cleaner font
-    ["Bold"] = 4          -- Heavy/Bold font
+    ["Default"] = Drawing.Fonts.UI,          -- Default Roblox font
+    ["Gotham"] = Enum.Font.Gotham,          -- Clean, modern Roblox font
+    ["LuckiestGuy"] = Enum.Font.LuckiestGuy, -- Fun, bold font
+    ["Highway"] = Enum.Font.Highway,         -- Sleek, readable font
+    ["SourceSans"] = Enum.Font.SourceSans,   -- Classic Roblox font
+    ["Ubuntu"] = Enum.Font.Ubuntu,           -- Professional font
+    ["Cartoon"] = Enum.Font.Cartoon          -- Fun, cartoony font
 }
 
 local function CalculateStaticBox(character)

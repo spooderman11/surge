@@ -97,7 +97,7 @@ do
     local FontStyle = Tabs.ESP:AddDropdown("FontStyle", {
         Title = "Font Style",
         Description = "Choose text font style",
-        Values = {"Default", "Monospace", "Cartoony", "Modern", "Bold"},
+        Values = {"Default", "Gotham", "LuckiestGuy", "Highway", "SourceSans", "Ubuntu", "Cartoon"},
         Default = "Default"
     })
 
