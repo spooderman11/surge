@@ -22,6 +22,33 @@ local SpeedModule = loadModule("https://raw.githubusercontent.com/spooderman11/s
 local Aimbot = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/aimbot.lua")
 local FlyModule = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/fly.lua")
 
+-- Add this after ESP module loading
+if not ESP then
+    warn("ESP module failed to load!")
+    return
+end
+
+-- Initialize ESP objects table if it doesn't exist
+if not _G.ESPObjects then
+    _G.ESPObjects = {}
+end
+
+local ESPObjects = _G.ESPObjects
+
+-- Add this function before the ESP settings section
+local function initializeESPObject(player)
+    if not ESPObjects[player] then
+        ESPObjects[player] = {
+            box = nil,
+            name = nil,
+            distance = nil,
+            tracer = nil,
+            chams = nil
+        }
+    end
+    return ESPObjects[player]
+end
+
 local function kick(reason)
     game.Players.LocalPlayer:Kick(reason)
 end
@@ -256,19 +283,18 @@ do
         ESP.Settings.ChamsEnabled = Value
         if not Value then
             for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-                if ESPObjects[player] and ESPObjects[player].chams then
-                    ESPObjects[player].chams:Destroy()
-                    ESPObjects[player].chams = nil
+                local espObj = ESPObjects[player]
+                if espObj and espObj.chams then
+                    espObj.chams:Destroy()
+                    espObj.chams = nil
                 end
             end
         else
-            -- Reinitialize Chams for all players when enabled
             for _, player in pairs(game:GetService("Players"):GetPlayers()) do
                 if player ~= game.Players.LocalPlayer then
-                    if not ESPObjects[player] then
-                        ESP.InitESP(player)
-                    elseif not ESPObjects[player].chams then
-                        ESPObjects[player].chams = ESP.CreateChams(player)
+                    local espObj = initializeESPObject(player)
+                    if not espObj.chams and ESP.CreateChams then
+                        espObj.chams = ESP.CreateChams(player)
                     end
                 end
             end
@@ -526,42 +552,16 @@ end)
 
 game:GetService("Players").PlayerAdded:Connect(function(player)
     pcall(function()
-        if ESPObjects and ESPObjects[player] then
-            ESP.CleanupESP(player)
+        if player ~= game.Players.LocalPlayer then
+            initializeESPObject(player)
         end
     end)
 end)
 
-game:GetService("CoreGui").DescendantRemoving:Connect(function(descendant)
-    if descendant.Name == "MainGui" then
-        ESP.CleanupAllESP()
+-- Initialize ESP for existing players
+for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        initializeESPObject(player)
     end
-end)
-
-game.Players.LocalPlayer.CharacterRemoving:Connect(function()
-    ESP.RemoveFOVCircle()
-    ESP.CleanupAllESP()
-end)
-
-game.Players.LocalPlayer.CharacterAdded:Connect(function()
-    ESP.CreateFOVCircle()
-end)
-
-SaveManager:SetLibrary(Fluent)
-InterfaceManager:SetLibrary(Fluent)
-SaveManager:IgnoreThemeSettings()
-SaveManager:SetIgnoreIndexes({})
-InterfaceManager:SetFolder("Surge")
-SaveManager:SetFolder("Surge/configs")
-InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-SaveManager:BuildConfigSection(Tabs.Settings)
-
-Window:SelectTab(1)
-
-Fluent:Notify({
-    Title = "surge.lua v." .. VERSION,
-    Content = "Script has been loaded successfully!",
-    Duration = 5
-})
 
 SaveManager:LoadAutoloadConfig()
