@@ -1,28 +1,29 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 local ESP = {
     Config = {
-        Enabled = false,
-        BoxEnabled = false,
+        Enabled = false, -- Changed default
+        BoxEnabled = false, -- Changed default
         BoxColor = Color3.fromRGB(255, 255, 255),
-        HealthBarEnabled = false,
-        TextEnabled = false,
+        HealthBarEnabled = false, -- Changed default
+        TextEnabled = false, -- Changed default
         TextColor = Color3.fromRGB(255, 255, 255),
         TextSize = 14,
-        ShowEquipped = false,
+        ShowEquipped = false, -- Changed default
+        -- New tracer settings
         TracerEnabled = false,
         TracerColor = Color3.fromRGB(255, 255, 255),
+        TracerOrigin = "Bottom", -- "Top", "Middle", "Bottom", "Mouse"
         TracerThickness = 1,
-        TracerPosition = "Down",
-        FOVEnabled = false,
-        FOVColor = Color3.fromRGB(255, 255, 255),
-        FOVRadius = 100,
-        FOVFollowMouse = false
+        -- New FOV circle settings
+        FovEnabled = false,
+        FovColor = Color3.fromRGB(255, 255, 255),
+        FovSize = 100,
+        FovFilled = false,
+        FovTransparency = 1
     },
     PlayerData = {},
-    FOVCircle = nil,
     UpdateDrawing = function(self, drawingType)
         for _, drawings in pairs(self.PlayerData) do
             if drawingType == "text" or drawingType == "all" then
@@ -52,13 +53,6 @@ local ESP = {
                 if drawings.HealthBar then
                     drawings.HealthBar.Visible = self.Config.Enabled and self.Config.HealthBarEnabled
                     drawings.HealthBarOutline.Visible = self.Config.Enabled and self.Config.HealthBarEnabled
-                end
-            end
-            if drawingType == "tracer" or drawingType == "all" then
-                if drawings.Tracer then
-                    drawings.Tracer.Color = self.Config.TracerColor
-                    drawings.Tracer.Thickness = self.Config.TracerThickness
-                    drawings.Tracer.Visible = self.Config.Enabled and self.Config.TracerEnabled
                 end
             end
         end
@@ -95,8 +89,21 @@ local function CreateDrawings(player)
         NameText = Drawing.new("Text"),
         RobloxName = Drawing.new("Text"),
         EquipText = Drawing.new("Text"),
-        Tracer = Drawing.new("Line") -- New drawing for tracers
+        -- Add tracer
+        Tracer = Drawing.new("Line")
     }
+    
+    -- Add FOV Circle (single instance for all players)
+    if not ESP.FovCircle then
+        ESP.FovCircle = Drawing.new("Circle")
+        ESP.FovCircle.Thickness = 1
+        ESP.FovCircle.NumSides = 60
+        ESP.FovCircle.Radius = ESP.Config.FovSize
+        ESP.FovCircle.Filled = ESP.Config.FovFilled
+        ESP.FovCircle.Visible = ESP.Config.FovEnabled
+        ESP.FovCircle.Transparency = ESP.Config.FovTransparency
+        ESP.FovCircle.Color = ESP.Config.FovColor
+    end
     
     -- Box settings
     drawings.Box.Thickness = 1
@@ -130,7 +137,6 @@ local function CreateDrawings(player)
     
     -- Tracer settings
     drawings.Tracer.Thickness = ESP.Config.TracerThickness
-    drawings.Tracer.Color = ESP.Config.TracerColor
     drawings.Tracer.Visible = false
     
     ESP.PlayerData[player] = drawings
@@ -168,6 +174,16 @@ local function GetIngameName(player)
 end
 
 local function UpdateESP()
+    -- Update FOV Circle
+    if ESP.FovCircle then
+        ESP.FovCircle.Position = Vector2.new(game.Workspace.CurrentCamera.ViewportSize.X / 2, game.Workspace.CurrentCamera.ViewportSize.Y / 2)
+        ESP.FovCircle.Visible = ESP.Config.FovEnabled
+        ESP.FovCircle.Radius = ESP.Config.FovSize
+        ESP.FovCircle.Color = ESP.Config.FovColor
+        ESP.FovCircle.Filled = ESP.Config.FovFilled
+        ESP.FovCircle.Transparency = ESP.Config.FovTransparency
+    end
+
     for player, drawings in pairs(ESP.PlayerData) do
         if player.Character 
             and player.Character:FindFirstChild("HumanoidRootPart") 
@@ -239,21 +255,24 @@ local function UpdateESP()
                     end
                 end
 
-                -- Update tracers
+                -- Update tracer
                 if ESP.Config.TracerEnabled then
-                    local tracerStartPos = Vector2.new()
-                    if ESP.Config.TracerPosition == "Down" then
-                        tracerStartPos = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
-                    elseif ESP.Config.TracerPosition == "Middle" then
-                        tracerStartPos = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
-                    elseif ESP.Config.TracerPosition == "Up" then
-                        tracerStartPos = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 0)
-                    elseif ESP.Config.TracerPosition == "Mouse" then
-                        local mousePos = UserInputService:GetMouseLocation()
-                        tracerStartPos = Vector2.new(mousePos.X, mousePos.Y)
+                    local tracerStart
+                    local viewportSize = game.Workspace.CurrentCamera.ViewportSize
+                    
+                    -- Determine tracer start position based on origin setting
+                    if ESP.Config.TracerOrigin == "Top" then
+                        tracerStart = Vector2.new(viewportSize.X / 2, 0)
+                    elseif ESP.Config.TracerOrigin == "Middle" then
+                        tracerStart = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
+                    elseif ESP.Config.TracerOrigin == "Bottom" then
+                        tracerStart = Vector2.new(viewportSize.X / 2, viewportSize.Y)
+                    elseif ESP.Config.TracerOrigin == "Mouse" then
+                        tracerStart = Vector2.new(game:GetService("UserInputService"):GetMouseLocation().X, 
+                                                game:GetService("UserInputService"):GetMouseLocation().Y)
                     end
-
-                    drawings.Tracer.From = tracerStartPos
+                    
+                    drawings.Tracer.From = tracerStart
                     drawings.Tracer.To = Vector2.new(vector.X, vector.Y)
                     drawings.Tracer.Color = ESP.Config.TracerColor
                     drawings.Tracer.Thickness = ESP.Config.TracerThickness
@@ -281,26 +300,13 @@ local function UpdateESP()
             drawings.Tracer.Visible = false
         end
     end
+end
 
-    -- Update FOV Circle
-    if ESP.Config.FOVEnabled then
-        if not ESP.FOVCircle then
-            ESP.FOVCircle = Drawing.new("Circle")
-            ESP.FOVCircle.NumSides = 100
-            ESP.FOVCircle.Thickness = 1
-            ESP.FOVCircle.Filled = false
-        end
-        ESP.FOVCircle.Visible = true
-        ESP.FOVCircle.Color = ESP.Config.FOVColor
-        ESP.FOVCircle.Radius = ESP.Config.FOVRadius
-        if ESP.Config.FOVFollowMouse then
-            local mousePos = UserInputService:GetMouseLocation()
-            ESP.FOVCircle.Position = Vector2.new(mousePos.X, mousePos.Y)
-        else
-            ESP.FOVCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
-        end
-    elseif ESP.FOVCircle then
-        ESP.FOVCircle.Visible = false
+-- Clean up FOV Circle when ESP is destroyed
+local function CleanupESP()
+    if ESP.FovCircle then
+        ESP.FovCircle:Remove()
+        ESP.FovCircle = nil
     end
 end
 
