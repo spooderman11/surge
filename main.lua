@@ -294,29 +294,26 @@ do
 
     local AimbotKeybind = KeybindSection:AddKeybind("AimbotKeybind", {
         Title = "Aimbot Keybind",
-        Mode = KeybindMode.Value,
-        Default = "MouseButton2", -- Right mouse button
-        
-        Callback = function(Value)
-            if KeybindMode.Value == "Hold" then
-                AimbotToggle:SetValue(Value)
-            end
-        end,
-
-        ChangedCallback = function(New)
-            print("Aimbot keybind changed to:", New)
-        end
+        Mode = "Toggle", -- Set initial mode
+        Default = "MouseButton2", -- Right mouse button as default
     })
 
-    KeybindMode:OnChanged(function()
-        local currentKey = AimbotKeybind:GetState()
-        AimbotToggle:SetValue(false)
-        AimbotKeybind:SetValue(currentKey, KeybindMode.Value)
+    -- Update Keybind Mode when changed
+    KeybindMode:OnChanged(function(Value)
+        AimbotKeybind:SetValue(AimbotKeybind.Value, Value) -- Update the keybind mode
     end)
 
+    -- Handle keybind state changes
     AimbotKeybind:OnClick(function()
         if KeybindMode.Value == "Toggle" then
             AimbotToggle:SetValue(not AimbotToggle.Value)
+        end
+    end)
+
+    -- Handle hold mode
+    AimbotKeybind:OnChanged(function(Value)
+        if KeybindMode.Value == "Hold" then
+            AimbotToggle:SetValue(Value)
         end
     end)
 
