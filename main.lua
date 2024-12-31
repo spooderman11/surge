@@ -4,8 +4,8 @@ local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
-local ESP = require(loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/refs/heads/main/modules/esp.lua"))())
-local Utils = require(loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/refs/heads/main/modules/utils.lua"))())
+local ESP = require(loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/main/modules/esp.lua"))())
+local Utils = require(loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/main/modules/utils.lua"))())
 
 local Window = Fluent:CreateWindow({
     Title = "surge.lua v." .. VERSION,

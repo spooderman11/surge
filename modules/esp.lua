@@ -1,4 +1,4 @@
-local Utils = require(loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/refs/heads/main/modules/utils.lua"))())
+local Utils = require(loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/main/modules/utils.lua"))())
 
 local ESPObjects = {}
 local FOVCircle
