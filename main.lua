@@ -388,6 +388,11 @@ do
         Rounding = 2
     })
 
+    local FovFollowMouse = FovSection:AddToggle("FovFollowMouse", {
+        Title = "FOV Follows Mouse",
+        Default = false
+    })
+
     Options.PlayerESP = EspToggle
     Options.ShowHeldESP = ShowHeldToggle
     Options.BoxESP = BoxToggle
@@ -405,6 +410,7 @@ do
     Options.FovColor = FovColor
     Options.FovFilled = FovFilled
     Options.FovTransparency = FovTransparency
+    Options.FovFollowMouse = FovFollowMouse
 
     EspToggle:OnChanged(function(Value)
         ESP.Config.Enabled = Value
@@ -491,6 +497,11 @@ do
         ESP:UpdateDrawing("all")
     end)
 
+    FovFollowMouse:OnChanged(function(Value)
+        ESP.Config.FovFollowMouse = Value
+        ESP:UpdateDrawing("all")
+    end)
+
     Options.PlayerESP:SetValue(ESP.Config.Enabled)
     Options.BoxESP:SetValue(ESP.Config.BoxEnabled)
     -- Options.BoxColor:SetValue(ESP.Config.BoxColor)
@@ -507,6 +518,7 @@ do
     -- Options.FovColor:SetValue(ESP.Config.FovColor)
     Options.FovFilled:SetValue(ESP.Config.FovFilled)
     Options.FovTransparency:SetValue(ESP.Config.FovTransparency)
+    Options.FovFollowMouse:SetValue(ESP.Config.FovFollowMouse)
 end
 
 Window:SelectTab(1)
