@@ -57,7 +57,40 @@ local ESPSettings = {
     TextOutline = true,
     HealthBarThickness = 2,
     HealthBarOffset = 6,
+    ChamsColor = Color3.fromRGB(255, 0, 0),
+    ChamsTransparency = 0.5,
+    ChamsFillColor = Color3.fromRGB(255, 0, 0),
+    ChamsFillTransparency = 0.8,
 }
+
+local ChamsObjects = {}
+
+local function CreateChams(character)
+    if not character then return end
+    
+    local chams = {
+        Outline = Instance.new("Highlight"),
+        Fill = Instance.new("Highlight")
+    }
+    
+    -- Setup outline highlight
+    chams.Outline.FillTransparency = 1
+    chams.Outline.OutlineTransparency = ESPSettings.ChamsTransparency
+    chams.Outline.OutlineColor = ESPSettings.ChamsColor
+    chams.Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    chams.Outline.Adornee = character
+    chams.Outline.Parent = game.CoreGui
+    
+    -- Setup fill highlight
+    chams.Fill.OutlineTransparency = 1
+    chams.Fill.FillTransparency = ESPSettings.ChamsFillTransparency
+    chams.Fill.FillColor = ESPSettings.ChamsFillColor
+    chams.Fill.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    chams.Fill.Adornee = character
+    chams.Fill.Parent = game.CoreGui
+    
+    return chams
+end
 
 local function CreateESP(player)
     local esp = Drawing.new("Text")
@@ -98,6 +131,7 @@ local function InitESP(player)
         healthBar = CreateBox(),
         healthBarOutline = CreateBox()
     }
+    ChamsObjects[player] = CreateChams(player.Character)
 end
 
 local function CleanupESP(player)
@@ -110,6 +144,14 @@ local function CleanupESP(player)
             end)
         end
         ESPObjects[player] = nil
+    end
+    
+    if ChamsObjects[player] then
+        pcall(function()
+            ChamsObjects[player].Outline:Destroy()
+            ChamsObjects[player].Fill:Destroy()
+        end)
+        ChamsObjects[player] = nil
     end
 end
 
@@ -288,6 +330,29 @@ local function UpdateESP(Options)
         else
             ESPObjects[player].healthBar.Visible = false
             ESPObjects[player].healthBarOutline.Visible = false
+        end
+
+        -- Chams
+        if Options.ChamsEnabled and Options.ChamsEnabled.Value then
+            if not ChamsObjects[player] or 
+               (ChamsObjects[player] and not ChamsObjects[player].Outline.Parent) then
+                ChamsObjects[player] = CreateChams(player.Character)
+            end
+            
+            if ChamsObjects[player] then
+                ChamsObjects[player].Outline.OutlineColor = Options.ChamsColor.Value
+                ChamsObjects[player].Outline.OutlineTransparency = 1 - Options.ChamsTransparency.Value
+                ChamsObjects[player].Fill.FillColor = Options.ChamsFillColor.Value
+                ChamsObjects[player].Fill.FillTransparency = 1 - Options.ChamsFillTransparency.Value
+            end
+        else
+            if ChamsObjects[player] then
+                pcall(function()
+                    ChamsObjects[player].Outline:Destroy()
+                    ChamsObjects[player].Fill:Destroy()
+                end)
+                ChamsObjects[player] = nil
+            end
         end
     end
 end

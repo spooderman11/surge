@@ -214,6 +214,61 @@ do
     TextOutline:OnChanged(function(Value)
         ESP.Settings.TextOutline = Value
     end)
+
+    -- Add after ESPCustomization section
+    local ChamsSection = Tabs.ESP:AddSection("Chams")
+
+    local ChamsEnabled = ChamsSection:AddToggle("ChamsEnabled", {
+        Title = "Enable Chams",
+        Default = false
+    })
+
+    local ChamsColor = ChamsSection:AddColorpicker("ChamsColor", {
+        Title = "Chams Outline Color",
+        Default = Color3.fromRGB(255, 0, 0)
+    })
+
+    local ChamsTransparency = ChamsSection:AddSlider("ChamsTransparency", {
+        Title = "Chams Transparency",
+        Default = 0.5,
+        Min = 0,
+        Max = 1,
+        Rounding = 2
+    })
+
+    local ChamsFillColor = ChamsSection:AddColorpicker("ChamsFillColor", {
+        Title = "Chams Fill Color",
+        Default = Color3.fromRGB(255, 0, 0)
+    })
+
+    local ChamsFillTransparency = ChamsSection:AddSlider("ChamsFillTransparency", {
+        Title = "Fill Transparency",
+        Default = 0.8,
+        Min = 0,
+        Max = 1,
+        Rounding = 2
+    })
+
+    -- Add Chams handlers
+    ChamsEnabled:OnChanged(function(Value)
+        -- Chams state is handled in ESP update loop
+    end)
+
+    ChamsColor:OnChanged(function(Value)
+        ESP.Settings.ChamsColor = Value
+    end)
+
+    ChamsTransparency:OnChanged(function(Value)
+        ESP.Settings.ChamsTransparency = Value
+    end)
+
+    ChamsFillColor:OnChanged(function(Value)
+        ESP.Settings.ChamsFillColor = Value
+    end)
+
+    ChamsFillTransparency:OnChanged(function(Value)
+        ESP.Settings.ChamsFillTransparency = Value
+    end)
 end
 
 -- Aimbot Settings
