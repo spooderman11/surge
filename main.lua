@@ -4,9 +4,31 @@ local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
--- Fix module loading
-local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/main/modules/esp.lua"))()
-local SpeedModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/spooderman11/surge/main/modules/speed.lua"))()
+-- Fix module loading with proper error handling
+local function loadModule(url)
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet(url))()
+    end)
+    if not success then
+        warn("Failed to load module from: " .. url)
+        return nil
+    end
+    return result
+end
+
+-- Load modules
+local ESP = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/esp.lua")
+local SpeedModule = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/speed.lua")
+local Aimbot = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/aimbot.lua")
+
+-- Error checking
+if not ESP or not SpeedModule or not Aimbot then
+    error("Failed to load one or more required modules!")
+    return
+end
+
+-- Initialize modules if needed
+ESP.CreateFOVCircle() -- Initialize FOV circle
 
 local Window = Fluent:CreateWindow({
     Title = "surge.lua v." .. VERSION,
@@ -19,7 +41,7 @@ local Window = Fluent:CreateWindow({
 })
 
 local Tabs = {
-    Aimbot = Window:AddTab({ Title = "Aimbot", Icon = "crosshair" }),
+    Combat = Window:AddTab({ Title = "Combat", Icon = "crosshair" }),
     ESP = Window:AddTab({ Title = "ESP", Icon = "eye" }),
     Player = Window:AddTab({ Title = "Player", Icon = "user-round" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "folder-open" }),
@@ -191,9 +213,9 @@ end
 
 -- Aimbot Settings
 do
-    local AimbotSection = Tabs.Aimbot:AddSection("Aimbot Controls")
-    local TargetingSection = Tabs.Aimbot:AddSection("Targeting")
-    local PredictionSection = Tabs.Aimbot:AddSection("Prediction")
+    local AimbotSection = Tabs.Combat:AddSection("Aimbot Controls")
+    local TargetingSection = Tabs.Combat:AddSection("Targeting")
+    local PredictionSection = Tabs.Combat:AddSection("Prediction")
 
     local AimbotToggle = AimbotSection:AddToggle("AimbotToggle", {
         Title = "Enable Aimbot",
@@ -325,6 +347,37 @@ do
     SpeedValue:OnChanged(function(Value)
         if SpeedEnabled.Value then
             SpeedModule.SetSpeed(Value)
+        end
+    end)
+end
+
+-- Add Fly controls
+do
+    local FlyEnabled = Tabs.Player:AddToggle("FlyEnabled", {
+        Title = "Enable Fly",
+        Default = false
+    })
+
+    local FlySpeed = Tabs.Player:AddSlider("FlySpeed", {
+        Title = "Fly Speed",
+        Default = 50,
+        Min = 10,
+        Max = 200,
+        Rounding = 0
+    })
+
+    FlyEnabled:OnChanged(function(Value)
+        if Value then
+            FlyModule.SetSpeed(FlySpeed.Value)
+            FlyModule.StartFlying()
+        else
+            FlyModule.StopFlying()
+        end
+    end)
+
+    FlySpeed:OnChanged(function(Value)
+        if FlyEnabled.Value then
+            FlyModule.SetSpeed(Value)
         end
     end)
 end

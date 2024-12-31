@@ -16,18 +16,19 @@ local moveDirections = {
 
 local function moveCharacterSmoothly(deltaTime)
     local moveVector = Vector3.new()
+    local camera = workspace.CurrentCamera
 
     if moveDirections.W then
-        moveVector = moveVector + humanoidRootPart.CFrame.LookVector
+        moveVector = moveVector + camera.CFrame.LookVector * Vector3.new(1, 0, 1)
     end
     if moveDirections.S then
-        moveVector = moveVector - humanoidRootPart.CFrame.LookVector
+        moveVector = moveVector - camera.CFrame.LookVector * Vector3.new(1, 0, 1)
     end
     if moveDirections.A then
-        moveVector = moveVector - humanoidRootPart.CFrame.RightVector
+        moveVector = moveVector - camera.CFrame.RightVector
     end
     if moveDirections.D then
-        moveVector = moveVector + humanoidRootPart.CFrame.RightVector
+        moveVector = moveVector + camera.CFrame.RightVector
     end
 
     if moveVector.Magnitude > 0 then
