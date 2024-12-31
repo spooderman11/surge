@@ -22,9 +22,13 @@ local SpeedModule = loadModule("https://raw.githubusercontent.com/spooderman11/s
 local Aimbot = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/aimbot.lua")
 local FlyModule = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/fly.lua")
 
+local function kick(reason)
+    game.Players.LocalPlayer:Kick(reason)
+end
+
 -- Error checking
 if not ESP or not SpeedModule or not Aimbot or not FlyModule then
-    error("Failed to load one or more required modules!")
+    kick("Failed to load one or more required modules!")
     return
 end
 
@@ -217,6 +221,7 @@ do
     local AimbotSection = Tabs.Combat:AddSection("Aimbot Controls")
     local TargetingSection = Tabs.Combat:AddSection("Targeting")
     local PredictionSection = Tabs.Combat:AddSection("Prediction")
+    local KeybindSection = Tabs.Combat:AddSection("Keybind Settings") -- Changed this line
 
     local AimbotToggle = AimbotSection:AddToggle("AimbotToggle", {
         Title = "Enable Aimbot",
@@ -281,15 +286,13 @@ do
     })
 
     -- Add to Aimbot Settings section
-    local KeybindSettings = AimbotSection:AddSection("Keybind")
-
-    local KeybindMode = KeybindSettings:AddDropdown("KeybindMode", {
+    local KeybindMode = KeybindSection:AddDropdown("KeybindMode", {
         Title = "Keybind Mode",
         Values = {"Toggle", "Hold"},
         Default = "Toggle"
     })
 
-    local AimbotKeybind = KeybindSettings:AddKeybind("AimbotKeybind", {
+    local AimbotKeybind = KeybindSection:AddKeybind("AimbotKeybind", {
         Title = "Aimbot Keybind",
         Mode = KeybindMode.Value,
         Default = "MouseButton2", -- Right mouse button
