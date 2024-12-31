@@ -59,6 +59,7 @@ local Options = Fluent.Options
 do
     local ESPEnabled = Tabs.ESP:AddToggle("ESPEnabled", {
         Title = "Enable ESP",
+        Description = "Master toggle - required for all ESP features to work",
         Default = false
     })
 
@@ -215,11 +216,12 @@ do
         ESP.Settings.TextOutline = Value
     end)
 
-    -- Add after ESPCustomization section
+    -- Update Chams section
     local ChamsSection = Tabs.ESP:AddSection("Chams")
 
     local ChamsEnabled = ChamsSection:AddToggle("ChamsEnabled", {
         Title = "Enable Chams",
+        Description = "Highlights players through walls",
         Default = false
     })
 
@@ -249,20 +251,30 @@ do
         Rounding = 2
     })
 
-    -- Add Chams handlers
+    -- Update Chams handlers
     ChamsEnabled:OnChanged(function(Value)
+        ESP.Settings.ChamsEnabled = Value
         if not Value then
-            -- Clean up all chams when disabled
             for _, player in pairs(game:GetService("Players"):GetPlayers()) do
                 if ESPObjects[player] and ESPObjects[player].chams then
                     ESPObjects[player].chams:Destroy()
                     ESPObjects[player].chams = nil
                 end
             end
+        else
+            -- Reinitialize Chams for all players when enabled
+            for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+                if player ~= game.Players.LocalPlayer then
+                    if not ESPObjects[player] then
+                        ESP.InitESP(player)
+                    elseif not ESPObjects[player].chams then
+                        ESPObjects[player].chams = ESP.CreateChams(player)
+                    end
+                end
+            end
         end
     end)
 
-    -- Make color and transparency changes instant
     ChamsColor:OnChanged(function(Value)
         for _, player in pairs(game:GetService("Players"):GetPlayers()) do
             if ESPObjects[player] and ESPObjects[player].chams then

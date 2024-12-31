@@ -90,6 +90,13 @@ local function CreateChams(player)
     highlight.Adornee = player.Character
     highlight.Parent = ChamsFolder
     
+    -- Connect to character changes
+    player.CharacterAdded:Connect(function(char)
+        if highlight and highlight.Parent then
+            highlight.Adornee = char
+        end
+    end)
+    
     return highlight
 end
 
@@ -417,5 +424,6 @@ return {
     UpdateESP = UpdateESP,
     CreateFOVCircle = CreateFOVCircle,
     RemoveFOVCircle = RemoveFOVCircle,
-    Settings = ESPSettings
+    Settings = ESPSettings,
+    CreateChams = CreateChams, -- Add this line
 }
