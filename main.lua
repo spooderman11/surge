@@ -19,9 +19,11 @@ local Window = Fluent:CreateWindow({
 })
 
 local Tabs = {
+    Aimbot = Window:AddTab({ Title = "Aimbot", Icon = "crosshair" }),
     ESP = Window:AddTab({ Title = "ESP", Icon = "eye" }),
-    Player = Window:AddTab({ Title = "Player", Icon = "settings" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "user-round" })
+    Player = Window:AddTab({ Title = "Player", Icon = "user-round" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "folder-open" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
 local Options = Fluent.Options
@@ -127,7 +129,6 @@ do
         Default = Color3.fromRGB(255, 255, 255)
     })
 
-    -- Remove FontStyle dropdown and add new customization options
     local ESPCustomization = Tabs.ESP:AddSection("ESP Customization")
 
     local BoxThickness = ESPCustomization:AddSlider("BoxThickness", {
@@ -167,7 +168,6 @@ do
         Default = true
     })
 
-    -- Update callbacks for customization
     BoxThickness:OnChanged(function(Value)
         ESP.Settings.BoxThickness = Value
     end)
@@ -189,7 +189,117 @@ do
     end)
 end
 
--- Speed Settings in Player Tab
+-- Aimbot Settings
+do
+    local AimbotSection = Tabs.Aimbot:AddSection("Aimbot Controls")
+    local TargetingSection = Tabs.Aimbot:AddSection("Targeting")
+    local PredictionSection = Tabs.Aimbot:AddSection("Prediction")
+
+    local AimbotToggle = AimbotSection:AddToggle("AimbotToggle", {
+        Title = "Enable Aimbot",
+        Default = false
+    })
+
+    local AimbotMode = AimbotSection:AddDropdown("AimbotMode", {
+        Title = "Aimbot Mode",
+        Values = {"Tween", "Mouse", "Camera"},
+        Default = "Tween"
+    })
+
+    local TargetMode = TargetingSection:AddDropdown("TargetMode", {
+        Title = "Lock System",
+        Values = {"Closest To Mouse", "Closest To Player"},
+        Default = "Closest To Mouse"
+    })
+
+    local TargetLock = TargetingSection:AddToggle("TargetLock", {
+        Title = "Lock Current Target",
+        Default = true
+    })
+
+    local DeathUnlock = TargetingSection:AddToggle("DeathUnlock", {
+        Title = "Unlock On Death",
+        Default = true
+    })
+
+    local PredictionToggle = PredictionSection:AddToggle("PredictionToggle", {
+        Title = "Enable Prediction",
+        Default = false
+    })
+
+    local PredictionX = PredictionSection:AddSlider("PredictionX", {
+        Title = "Prediction X",
+        Default = 1,
+        Min = 0,
+        Max = 10,
+        Rounding = 2
+    })
+
+    local PredictionY = PredictionSection:AddSlider("PredictionY", {
+        Title = "Prediction Y",
+        Default = 1,
+        Min = 0,
+        Max = 10,
+        Rounding = 2
+    })
+
+    local SmoothnessToggle = AimbotSection:AddToggle("SmoothnessToggle", {
+        Title = "Enable Smoothing",
+        Default = false
+    })
+
+    local SmoothnessSlider = AimbotSection:AddSlider("SmoothnessSlider", {
+        Title = "Smoothness",
+        Description = "Lower = Faster",
+        Default = 0.5,
+        Min = 0,
+        Max = 1,
+        Rounding = 2
+    })
+
+    -- Update handlers
+    AimbotToggle:OnChanged(function(Value)
+        Aimbot.Toggle(Value)
+    end)
+
+    AimbotMode:OnChanged(function(Value)
+        Aimbot.Settings.Mode = Value
+    end)
+
+    TargetMode:OnChanged(function(Value)
+        Aimbot.Settings.TargetMode = Value
+        Aimbot.Target = nil
+    end)
+
+    TargetLock:OnChanged(function(Value)
+        Aimbot.Settings.TargetLock = Value
+    end)
+
+    DeathUnlock:OnChanged(function(Value)
+        Aimbot.Settings.DeathUnlock = Value
+    end)
+
+    PredictionToggle:OnChanged(function(Value)
+        Aimbot.Settings.Prediction = Value
+    end)
+
+    PredictionX:OnChanged(function(Value)
+        Aimbot.Settings.PredictionX = Value
+    end)
+
+    PredictionY:OnChanged(function(Value)
+        Aimbot.Settings.PredictionY = Value
+    end)
+
+    SmoothnessToggle:OnChanged(function(Value)
+        Aimbot.Settings.Smoothness = Value
+    end)
+
+    SmoothnessSlider:OnChanged(function(Value)
+        Aimbot.Settings.SmoothnessValue = Value
+    end)
+end
+
 do
     local SpeedEnabled = Tabs.Player:AddToggle("SpeedEnabled", {
         Title = "Enable Speed",
@@ -219,17 +329,15 @@ do
     end)
 end
 
--- ESP Update Loop with error handling
 game:GetService("RunService").RenderStepped:Connect(function()
     pcall(function()
         ESP.UpdateESP(Options)
     end)
 end)
 
--- Player cleanup handlers with error handling
 game:GetService("Players").PlayerRemoving:Connect(function(player)
     pcall(function()
-        ESP.CleanupESP(player)
+        ESP.CleanupESP(player) -- some esp tipes setrenderproperty is a thign and cleardrawcache
     end)
 end)
 
@@ -241,14 +349,12 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
     end)
 end)
 
--- Clean all ESP when game ends or player teleports
 game:GetService("CoreGui").DescendantRemoving:Connect(function(descendant)
     if descendant.Name == "MainGui" then
         ESP.CleanupAllESP()
     end
 end)
 
--- Cleanup on character events
 game.Players.LocalPlayer.CharacterRemoving:Connect(function()
     ESP.RemoveFOVCircle()
     ESP.CleanupAllESP()
@@ -258,13 +364,12 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function()
     ESP.CreateFOVCircle()
 end)
 
--- Setup SaveManager and InterfaceManager
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({})
-InterfaceManager:SetFolder("SurgeESP")
-SaveManager:SetFolder("SurgeESP/configs")
+InterfaceManager:SetFolder("Surge")
+SaveManager:SetFolder("Surge/configs")
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
 
