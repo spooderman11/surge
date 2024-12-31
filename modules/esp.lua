@@ -1,4 +1,4 @@
-print("Hi from code")
+print("Hi from code 22")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -32,29 +32,29 @@ local ESP = {
                 if drawings.NameText then
                     drawings.NameText.Size = self.Config.TextSize
                     drawings.NameText.Color = self.Config.TextColor
-                    drawings.NameText.Visible = self.Config.Enabled and self.Config.TextEnabled
+                    drawings.NameText.Visible = self.Config.TextEnabled -- Removed Enabled dependency
                 end
                 if drawings.RobloxName then
                     drawings.RobloxName.Size = self.Config.TextSize
                     drawings.RobloxName.Color = self.Config.TextColor
-                    drawings.RobloxName.Visible = self.Config.Enabled and self.Config.TextEnabled
+                    drawings.RobloxName.Visible = self.Config.TextEnabled -- Removed Enabled dependency
                 end
                 if drawings.EquipText then
                     drawings.EquipText.Size = self.Config.TextSize
                     drawings.EquipText.Color = self.Config.TextColor
-                    drawings.EquipText.Visible = self.Config.Enabled and self.Config.TextEnabled and self.Config.ShowEquipped
+                    drawings.EquipText.Visible = self.Config.ShowEquipped -- Independent toggle
                 end
             end
             if drawingType == "box" or drawingType == "all" then
                 if drawings.Box then
                     drawings.Box.Color = self.Config.BoxColor
-                    drawings.Box.Visible = self.Config.Enabled and self.Config.BoxEnabled
+                    drawings.Box.Visible = self.Config.BoxEnabled -- Removed Enabled dependency
                 end
             end
             if drawingType == "health" or drawingType == "all" then
                 if drawings.HealthBar then
-                    drawings.HealthBar.Visible = self.Config.Enabled and self.Config.HealthBarEnabled
-                    drawings.HealthBarOutline.Visible = self.Config.Enabled and self.Config.HealthBarEnabled
+                    drawings.HealthBar.Visible = self.Config.HealthBarEnabled -- Removed Enabled dependency
+                    drawings.HealthBarOutline.Visible = self.Config.HealthBarEnabled -- Removed Enabled dependency
                 end
             end
         end
@@ -192,39 +192,72 @@ local function UpdateESP()
         ESP.FovCircle.Transparency = ESP.Config.FovTransparency
     end
 
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            -- Create drawings if they don't exist
-            if not ESP.PlayerData[player] then
-                CreateDrawings(player)
-            end
+    -- Ensure we have drawings for all players
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer and not ESP.PlayerData[player] then
+            CreateDrawings(player)
+        end
+    end
 
-            local drawings = ESP.PlayerData[player]
-            if drawings and player.Character 
-                and player.Character:FindFirstChild("HumanoidRootPart") 
-                and player.Character:FindFirstChild("Humanoid")
-                and HasRequiredBodyParts(player.Character) then -- Check for required body parts
+    -- Update ESP for all players
+    for player, drawings in pairs(ESP.PlayerData) do
+        if player and player.Parent and drawings then -- Check if player still exists
+            local character = player.Character
+            if character and 
+               character:FindFirstChild("HumanoidRootPart") and 
+               character:FindFirstChild("Humanoid") then
                 
-                local hrp = player.Character.HumanoidRootPart
-                local humanoid = player.Character.Humanoid
+                local hrp = character.HumanoidRootPart
+                local humanoid = character.Humanoid
                 local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(hrp.Position)
                 
-                if onScreen and ESP.Config.Enabled then
+                -- Always update tracers if enabled, regardless of ESP.Config.Enabled
+                if ESP.Config.TracerEnabled then
+                    local tracerStart
+                    local viewportSize = game.Workspace.CurrentCamera.ViewportSize
+                    local mouseLocation = game:GetService("UserInputService"):GetMouseLocation()
+                    
+                    if ESP.Config.TracerOrigin == "Top" then
+                        tracerStart = Vector2.new(viewportSize.X / 2, 0)
+                    elseif ESP.Config.TracerOrigin == "Middle" then
+                        tracerStart = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
+                    elseif ESP.Config.TracerOrigin == "Bottom" then
+                        tracerStart = Vector2.new(viewportSize.X / 2, viewportSize.Y)
+                    elseif ESP.Config.TracerOrigin == "Mouse" then
+                        tracerStart = mouseLocation
+                    end
+                    
+                    if onScreen then
+                        drawings.Tracer.From = tracerStart
+                        drawings.Tracer.To = Vector2.new(vector.X, vector.Y)
+                        drawings.Tracer.Color = ESP.Config.TracerColor
+                        drawings.Tracer.Thickness = ESP.Config.TracerThickness
+                        drawings.Tracer.Visible = true
+                    else
+                        drawings.Tracer.Visible = false
+                    end
+                else
+                    drawings.Tracer.Visible = false
+                end
+
+                if onScreen then
                     -- Get character bounds
                     local topPosition = workspace.CurrentCamera:WorldToViewportPoint(hrp.Position + Vector3.new(0, 3, 0))
                     local bottomPosition = workspace.CurrentCamera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
                     local height = math.abs(topPosition.Y - bottomPosition.Y)
-                    local width = height * 0.6 -- Adjust width based on height for proper proportions
-                    
-                    -- Update box
+                    local width = height * 0.6
+
+                    -- Update box if enabled
                     if ESP.Config.BoxEnabled then
                         drawings.Box.Size = Vector2.new(width, height)
                         drawings.Box.Position = Vector2.new(vector.X - width / 2, vector.Y - height / 2)
                         drawings.Box.Color = ESP.Config.BoxColor
                         drawings.Box.Visible = true
+                    else
+                        drawings.Box.Visible = false
                     end
-                    
-                    -- Update healthbar (moved to the side)
+
+                    -- Update health bar if enabled
                     if ESP.Config.HealthBarEnabled then
                         local healthBarWidth = 4
                         local healthBarOutlinePos = Vector2.new(vector.X + (width / 2) + 3, vector.Y - height / 2)
@@ -239,80 +272,56 @@ local function UpdateESP()
                         drawings.HealthBar.Position = Vector2.new(healthBarOutlinePos.X + 1, healthBarOutlinePos.Y + (height - drawings.HealthBar.Size.Y) - 1)
                         drawings.HealthBar.Color = Color3.fromHSV(healthPercentage * 0.3, 1, 1)
                         drawings.HealthBar.Visible = true
+                    else
+                        drawings.HealthBar.Visible = false
+                        drawings.HealthBarOutline.Visible = false
                     end
-                    
-                    -- Update text positions relative to new box size
+
+                    -- Update text if enabled
                     if ESP.Config.TextEnabled then
                         local ingameName = GetIngameName(player)
-                        local equipped = GetEquippedItem(player.Character)
                         
                         drawings.NameText.Position = Vector2.new(vector.X, vector.Y - height / 2 - 15)
                         drawings.NameText.Color = ESP.Config.TextColor
-                        drawings.NameText.Text = ingameName -- Use ingame name here
+                        drawings.NameText.Text = ingameName
                         drawings.NameText.Size = ESP.Config.TextSize
                         drawings.NameText.Visible = true
-                        
+
                         drawings.RobloxName.Position = Vector2.new(vector.X, vector.Y + height / 2 + 5)
                         drawings.RobloxName.Color = ESP.Config.TextColor
-                        drawings.RobloxName.Text = "@" .. player.Name -- Keep Roblox username
+                        drawings.RobloxName.Text = "@" .. player.Name
                         drawings.RobloxName.Size = ESP.Config.TextSize
                         drawings.RobloxName.Visible = true
-                        
-                        -- Only show EquipText if ShowEquipped is enabled
-                        if ESP.Config.ShowEquipped then
-                            drawings.EquipText.Position = Vector2.new(vector.X, vector.Y + height / 2 + 20)
-                            drawings.EquipText.Color = ESP.Config.TextColor
-                            drawings.EquipText.Text = equipped
-                            drawings.EquipText.Size = ESP.Config.TextSize
-                            drawings.EquipText.Visible = true
-                        else
-                            drawings.EquipText.Visible = false
-                        end
+                    else
+                        drawings.NameText.Visible = false
+                        drawings.RobloxName.Visible = false
                     end
 
-                    -- Update tracer
-                    if ESP.Config.TracerEnabled then
-                        local tracerStart
-                        local viewportSize = game.Workspace.CurrentCamera.ViewportSize
-                        local mouseLocation = game:GetService("UserInputService"):GetMouseLocation()
-                        
-                        -- Determine tracer start position based on origin setting
-                        if ESP.Config.TracerOrigin == "Top" then
-                            tracerStart = Vector2.new(viewportSize.X / 2, 0)
-                        elseif ESP.Config.TracerOrigin == "Middle" then
-                            tracerStart = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
-                        elseif ESP.Config.TracerOrigin == "Bottom" then
-                            tracerStart = Vector2.new(viewportSize.X / 2, viewportSize.Y)
-                        elseif ESP.Config.TracerOrigin == "Mouse" then
-                            tracerStart = mouseLocation
-                        end
-                        
-                        drawings.Tracer.From = tracerStart
-                        drawings.Tracer.To = Vector2.new(vector.X, vector.Y)
-                        drawings.Tracer.Color = ESP.Config.TracerColor
-                        drawings.Tracer.Thickness = ESP.Config.TracerThickness
-                        drawings.Tracer.Visible = true
+                    -- Update equipped text independently
+                    if ESP.Config.ShowEquipped then
+                        local equipped = GetEquippedItem(character)
+                        drawings.EquipText.Position = Vector2.new(vector.X, vector.Y + height / 2 + 20)
+                        drawings.EquipText.Color = ESP.Config.TextColor
+                        drawings.EquipText.Text = equipped
+                        drawings.EquipText.Size = ESP.Config.TextSize
+                        drawings.EquipText.Visible = true
                     else
-                        drawings.Tracer.Visible = false
+                        drawings.EquipText.Visible = false
                     end
                 else
+                    -- Hide visuals when offscreen (except tracers, which are handled separately)
                     drawings.Box.Visible = false
                     drawings.HealthBar.Visible = false
                     drawings.HealthBarOutline.Visible = false
                     drawings.NameText.Visible = false
                     drawings.RobloxName.Visible = false
                     drawings.EquipText.Visible = false
-                    drawings.Tracer.Visible = false
                 end
             else
-                -- Hide ESP if character isn't fully loaded
-                drawings.Box.Visible = false
-                drawings.HealthBar.Visible = false
-                drawings.HealthBarOutline.Visible = false
-                drawings.NameText.Visible = false
-                drawings.RobloxName.Visible = false
-                drawings.EquipText.Visible = false
-                drawings.Tracer.Visible = false
+                -- Hide everything if character is invalid
+                for _, drawing in pairs(drawings) do
+                    drawing.Visible = false
+                end
             end
         end
     end
