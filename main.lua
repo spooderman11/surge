@@ -27,28 +27,6 @@ if not ESP then
     warn("ESP module failed to load!")
     return
 end
-
--- Initialize ESP objects table if it doesn't exist
-if not _G.ESPObjects then
-    _G.ESPObjects = {}
-end
-
-local ESPObjects = _G.ESPObjects
-
--- Add this function before the ESP settings section
-local function initializeESPObject(player)
-    if not ESPObjects[player] then
-        ESPObjects[player] = {
-            box = nil,
-            name = nil,
-            distance = nil,
-            tracer = nil,
-            chams = nil
-        }
-    end
-    return ESPObjects[player]
-end
-
 local function kick(reason)
     game.Players.LocalPlayer:Kick(reason)
 end
@@ -59,12 +37,9 @@ if not ESP or not SpeedModule or not Aimbot or not FlyModule then
     return
 end
 
--- Initialize modules if needed
-ESP.CreateFOVCircle() -- Initialize FOV circle
-
 local Window = Fluent:CreateWindow({
     Title = "surge.lua v." .. VERSION,
-    SubTitle = "by Spoody",
+    SubTitle = "",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -74,7 +49,7 @@ local Window = Fluent:CreateWindow({
 
 local Tabs = {
     Combat = Window:AddTab({ Title = "Combat", Icon = "crosshair" }),
-    ESP = Window:AddTab({ Title = "ESP", Icon = "eye" }),
+    Esp = Window:AddTab({ Title = "Esp", Icon = "eye" }),
     Player = Window:AddTab({ Title = "Player", Icon = "user-round" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "folder-open" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
@@ -84,242 +59,108 @@ local Options = Fluent.Options
 
 -- ESP Settings
 do
-    local ESPEnabled = Tabs.ESP:AddToggle("ESPEnabled", {
-        Title = "Enable ESP",
-        Description = "Master toggle - required for all ESP features to work",
-        Default = false
+    local PlayerEspSection = Tabs.Esp:AddSection("Player ESP")
+    
+    local EspToggle = Tabs.Esp:AddToggle("PlayerESP", {
+        Title = "Player ESP",
+        Default = ESP.Config.Enabled -- Fix: Changed from .True to .Enabled
     })
 
-    local BoxESP = Tabs.ESP:AddToggle("BoxESP", {
+    local ShowHeldToggle = Tabs.Esp:AddToggle("ShowHeldESP", {
+        Title = "Show Held",
+        Default = ESP.Config.ShowEquipped
+    })
+
+    local BoxToggle = Tabs.Esp:AddToggle("BoxESP", {
         Title = "Box ESP",
-        Default = false
+        Default = ESP.Config.BoxEnabled
     })
 
-    local StaticESP = Tabs.ESP:AddToggle("StaticESP", {
-        Title = "Static Box Size",
-        Description = "Use fixed size for ESP boxes",
-        Default = false
+    local BoxColor = Tabs.Esp:AddColorpicker("BoxColor", {
+        Title = "Box Color",
+        Default = ESP.Config.BoxColor
     })
 
-    local NameESP = Tabs.ESP:AddToggle("NameESP", {
+    local HealthBarToggle = Tabs.Esp:AddToggle("HealthBar", {
+        Title = "Health Bar",
+        Default = ESP.Config.HealthBarEnabled
+    })
+
+    local TextToggle = Tabs.Esp:AddToggle("NameESP", {
         Title = "Name ESP",
-        Default = false
+        Default = ESP.Config.TextEnabled
     })
 
-    local DistanceESP = Tabs.ESP:AddToggle("DistanceESP", {
-        Title = "Distance ESP",
-        Default = false
+    local TextColor = Tabs.Esp:AddColorpicker("TextColor", {
+        Title = "Text Color",
+        Default = ESP.Config.TextColor
     })
 
-    local TracerESP = Tabs.ESP:AddToggle("TracerESP", {
-        Title = "Tracers",
-        Default = false
-    })
-
-    local ESPColor = Tabs.ESP:AddColorpicker("ESPColor", {
-        Title = "ESP Color",
-        Default = Color3.fromRGB(255, 255, 255)
-    })
-
-    local ESPDistance = Tabs.ESP:AddSlider("ESPDistance", {
-        Title = "ESP Distance",
-        Description = "Maximum distance to render ESP",
-        Default = 1000,
-        Min = 0,
-        Max = 2000,
-        Rounding = 0
-    })
-
-    local TracerPosition = Tabs.ESP:AddDropdown("TracerPosition", {
-        Title = "Tracer Position",
-        Description = "Choose tracer start position",
-        Values = {"Down", "Middle", "Up", "Mouse"},
-        Default = "Down"
-    })
-
-    local ESPType = Tabs.ESP:AddDropdown("ESPType", {
-        Title = "ESP Style",
-        Description = "Choose ESP box style",
-        Values = {"Box", "Off"},
-        Default = "Box"
-    })
-
-    local FontSize = Tabs.ESP:AddSlider("FontSize", {
-        Title = "Font Size",
-        Description = "Size for name and distance ESP",
-        Default = 13,
+    local TextSize = Tabs.Esp:AddSlider("TextSize", {
+        Title = "Text Size",
+        Description = "Adjust ESP text size",
+        Default = ESP.Config.TextSize,
         Min = 8,
         Max = 24,
         Rounding = 0
     })
 
-    local HealthBarESP = Tabs.ESP:AddToggle("HealthBarESP", {
-        Title = "Health Bar",
-        Default = false
-    })
+    Options.PlayerESP = EspToggle
+    Options.ShowHeldESP = ShowHeldToggle
+    Options.BoxESP = BoxToggle
+    Options.BoxColor = BoxColor
+    Options.HealthBar = HealthBarToggle
+    Options.NameESP = TextToggle
+    Options.TextColor = TextColor
+    Options.TextSize = TextSize
 
-    local FOVSettings = Tabs.ESP:AddSection("FOV Settings")
-
-    local FOVEnabled = FOVSettings:AddToggle("FOVEnabled", {
-        Title = "Enable FOV Circle",
-        Default = false
-    })
-
-    local FOVFollowMouse = FOVSettings:AddToggle("FOVFollowMouse", {
-        Title = "Follow Mouse",
-        Default = false
-    })
-
-    local FOVRadius = FOVSettings:AddSlider("FOVRadius", {
-        Title = "FOV Radius",
-        Description = "Adjust FOV circle size",
-        Default = 100,
-        Min = 0,
-        Max = 500,
-        Rounding = 0
-    })
-
-    local FOVColor = FOVSettings:AddColorpicker("FOVColor", {
-        Title = "FOV Color",
-        Default = Color3.fromRGB(255, 255, 255)
-    })
-
-    local ESPCustomization = Tabs.ESP:AddSection("ESP Customization")
-
-    local BoxThickness = ESPCustomization:AddSlider("BoxThickness", {
-        Title = "Box Thickness",
-        Default = 1,
-        Min = 1,
-        Max = 5,
-        Rounding = 1
-    })
-
-    local BoxTransparency = ESPCustomization:AddSlider("BoxTransparency", {
-        Title = "Box Transparency",
-        Default = 1,
-        Min = 0,
-        Max = 1,
-        Rounding = 2
-    })
-
-    local TracerThickness = ESPCustomization:AddSlider("TracerThickness", {
-        Title = "Tracer Thickness",
-        Default = 1,
-        Min = 1,
-        Max = 5,
-        Rounding = 1
-    })
-
-    local TracerTransparency = ESPCustomization:AddSlider("TracerTransparency", {
-        Title = "Tracer Transparency",
-        Default = 1,
-        Min = 0,
-        Max = 1,
-        Rounding = 2
-    })
-
-    local TextOutline = ESPCustomization:AddToggle("TextOutline", {
-        Title = "Text Outline",
-        Default = true
-    })
-
-    BoxThickness:OnChanged(function(Value)
-        ESP.Settings.BoxThickness = Value
+    EspToggle:OnChanged(function(Value)
+        ESP.Config.Enabled = Value
+        ESP:UpdateDrawing("all")
     end)
 
-    BoxTransparency:OnChanged(function(Value)
-        ESP.Settings.BoxTransparency = Value
+    BoxToggle:OnChanged(function(Value)
+        ESP.Config.BoxEnabled = Value
+        ESP:UpdateDrawing("box")
     end)
 
-    TracerThickness:OnChanged(function(Value)
-        ESP.Settings.TracerThickness = Value
+    ShowHeldToggle:OnChanged(function(Value)
+        ESP.Config.ShowEquipped = Value
+        ESP:UpdateDrawing("box")
     end)
 
-    TracerTransparency:OnChanged(function(Value)
-        ESP.Settings.TracerTransparency = Value
+    BoxColor:OnChanged(function(Value)
+        ESP.Config.BoxColor = Value
+        ESP:UpdateDrawing("box")
     end)
 
-    TextOutline:OnChanged(function(Value)
-        ESP.Settings.TextOutline = Value
+    HealthBarToggle:OnChanged(function(Value)
+        ESP.Config.HealthBarEnabled = Value
+        ESP:UpdateDrawing("health")
     end)
 
-    -- Update Chams section
-    local ChamsSection = Tabs.ESP:AddSection("Chams")
-
-    local ChamsEnabled = ChamsSection:AddToggle("ChamsEnabled", {
-        Title = "Enable Chams",
-        Description = "Highlights players through walls",
-        Default = false
-    })
-
-    local ChamsColor = ChamsSection:AddColorpicker("ChamsColor", {
-        Title = "Chams Outline Color",
-        Default = Color3.fromRGB(255, 0, 0)
-    })
-
-    local ChamsTransparency = ChamsSection:AddSlider("ChamsTransparency", {
-        Title = "Chams Transparency",
-        Default = 0.5,
-        Min = 0,
-        Max = 1,
-        Rounding = 2
-    })
-
-    local ChamsFillColor = ChamsSection:AddColorpicker("ChamsFillColor", {
-        Title = "Chams Fill Color",
-        Default = Color3.fromRGB(255, 0, 0)
-    })
-
-    local ChamsFillTransparency = ChamsSection:AddSlider("ChamsFillTransparency", {
-        Title = "Fill Transparency",
-        Default = 0.8,
-        Min = 0,
-        Max = 1,
-        Rounding = 2
-    })
-
-    -- Update Chams handlers
-    ChamsEnabled:OnChanged(function(Value)
-        ESP.Settings.ChamsEnabled = Value
-        if not Value then
-            for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-                local espObj = ESPObjects[player]
-                if espObj and espObj.chams then
-                    espObj.chams:Destroy()
-                    espObj.chams = nil
-                end
-            end
-        else
-            for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-                if player ~= game.Players.LocalPlayer then
-                    local espObj = initializeESPObject(player)
-                    if not espObj.chams and ESP.CreateChams then
-                        espObj.chams = ESP.CreateChams(player)
-                    end
-                end
-            end
-        end
+    TextToggle:OnChanged(function(Value)
+        ESP.Config.TextEnabled = Value
+        ESP:UpdateDrawing("text")
     end)
 
-    ChamsColor:OnChanged(function(Value)
-        for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-            if ESPObjects[player] and ESPObjects[player].chams then
-                ESPObjects[player].chams.OutlineColor = Value
-            end
-        end
+    TextColor:OnChanged(function(Value)
+        ESP.Config.TextColor = Value
+        ESP:UpdateDrawing("text")
     end)
 
-    ChamsTransparency:OnChanged(function(Value)
-        ESP.Settings.ChamsTransparency = Value
+    TextSize:OnChanged(function(Value)
+        ESP.Config.TextSize = Value
+        ESP:UpdateDrawing("text")
     end)
 
-    ChamsFillColor:OnChanged(function(Value)
-        ESP.Settings.ChamsFillColor = Value
-    end)
-
-    ChamsFillTransparency:OnChanged(function(Value)
-        ESP.Settings.ChamsFillTransparency = Value
-    end)
+    Options.PlayerESP:SetValue(ESP.Config.Enabled)
+    Options.BoxESP:SetValue(ESP.Config.BoxEnabled)
+    Options.BoxColor:SetValue(ESP.Config.BoxColor)
+    Options.HealthBar:SetValue(ESP.Config.HealthBarEnabled)
+    Options.NameESP:SetValue(ESP.Config.TextEnabled)
+    Options.TextColor:SetValue(ESP.Config.TextColor)
+    Options.TextSize:SetValue(ESP.Config.TextSize)
 end
 
 -- Aimbot Settings
@@ -538,30 +379,21 @@ do
     end)
 end
 
-game:GetService("RunService").RenderStepped:Connect(function()
-    pcall(function()
-        ESP.UpdateESP(Options)
-    end)
-end)
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("Surge")
+SaveManager:SetFolder("Surge/configs")
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
 
-game:GetService("Players").PlayerRemoving:Connect(function(player)
-    pcall(function()
-        ESP.CleanupESP(player) -- some esp tipes setrenderproperty is a thign and cleardrawcache
-    end)
-end)
+Window:SelectTab(1)
 
-game:GetService("Players").PlayerAdded:Connect(function(player)
-    pcall(function()
-        if player ~= game.Players.LocalPlayer then
-            initializeESPObject(player)
-        end
-    end)
-end)
-
--- Initialize ESP for existing players
-for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-    if player ~= game.Players.LocalPlayer then
-        initializeESPObject(player)
-    end
+Fluent:Notify({
+    Title = "surge.lua v." .. VERSION,
+    Content = "Script has been loaded successfully!",
+    Duration = 5
+})
 
 SaveManager:LoadAutoloadConfig()
