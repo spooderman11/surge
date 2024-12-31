@@ -64,12 +64,22 @@ local ESPSettings = {
     ChamsFillTransparency = 0.8
 }
 
-local ChamsFolder = Instance.new("Folder")
-ChamsFolder.Name = "ChamsFolder"
-ChamsFolder.Parent = game:GetService("CoreGui")
+-- Remove old ChamsFolder creation and replace with this:
+local ChamsFolder = (function()
+    local folder = Instance.new("Folder")
+    folder.Name = "ChamsFolder"
+    folder.Parent = game:GetService("CoreGui")
+    return folder
+end)()
 
 local function CreateChams(player)
-    if not player.Character then return nil end
+    if not player or not player.Character then return nil end
+    
+    -- Remove any existing chams
+    local existingHighlight = ChamsFolder:FindFirstChild(player.Name .. "_Chams")
+    if existingHighlight then
+        existingHighlight:Destroy()
+    end
     
     local highlight = Instance.new("Highlight")
     highlight.Name = player.Name .. "_Chams"
@@ -77,7 +87,6 @@ local function CreateChams(player)
     highlight.FillTransparency = ESPSettings.ChamsFillTransparency
     highlight.OutlineColor = ESPSettings.ChamsColor
     highlight.OutlineTransparency = ESPSettings.ChamsTransparency
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
     highlight.Adornee = player.Character
     highlight.Parent = ChamsFolder
     
@@ -345,19 +354,18 @@ local function UpdateESP(Options)
             ESPObjects[player].healthBarOutline.Visible = false
         end
 
-        -- Chams
-        if ESPSettings.ChamsEnabled then
-            if not ESPObjects[player] or not ESPObjects[player].chams or not ESPObjects[player].chams.Parent then
-                if ESPObjects[player] then
-                    ESPObjects[player].chams = CreateChams(player)
-                end
+        -- Chams update section
+        if Options.ChamsEnabled and Options.ChamsEnabled.Value then
+            if not ESPObjects[player].chams or not ESPObjects[player].chams.Parent then
+                ESPObjects[player].chams = CreateChams(player)
             end
             
-            if ESPObjects[player] and ESPObjects[player].chams then
-                ESPObjects[player].chams.FillColor = ESPSettings.ChamsFillColor
-                ESPObjects[player].chams.FillTransparency = ESPSettings.ChamsFillTransparency
-                ESPObjects[player].chams.OutlineColor = ESPSettings.ChamsColor
-                ESPObjects[player].chams.OutlineTransparency = ESPSettings.ChamsTransparency
+            if ESPObjects[player].chams then
+                ESPObjects[player].chams.FillColor = Options.ChamsFillColor.Value
+                ESPObjects[player].chams.FillTransparency = Options.ChamsFillTransparency.Value
+                ESPObjects[player].chams.OutlineColor = Options.ChamsColor.Value
+                ESPObjects[player].chams.OutlineTransparency = Options.ChamsTransparency.Value
+                ESPObjects[player].chams.Adornee = player.Character
             end
         else
             if ESPObjects[player] and ESPObjects[player].chams then
@@ -367,6 +375,16 @@ local function UpdateESP(Options)
         end
     end
 end
+
+-- Add cleanup function for ChamsFolder
+game:GetService("CoreGui").DescendantRemoving:Connect(function(descendant)
+    if descendant.Name == "ChamsFolder" then
+        ChamsFolder:Destroy()
+        ChamsFolder = Instance.new("Folder")
+        ChamsFolder.Name = "ChamsFolder"
+        ChamsFolder.Parent = game:GetService("CoreGui")
+    end
+end)
 
 local function CreateFOVCircle()
     FOVCircle = Drawing.new("Circle")

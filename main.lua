@@ -251,11 +251,24 @@ do
 
     -- Add Chams handlers
     ChamsEnabled:OnChanged(function(Value)
-        -- Chams state is handled in ESP update loop
+        if not Value then
+            -- Clean up all chams when disabled
+            for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+                if ESPObjects[player] and ESPObjects[player].chams then
+                    ESPObjects[player].chams:Destroy()
+                    ESPObjects[player].chams = nil
+                end
+            end
+        end
     end)
 
+    -- Make color and transparency changes instant
     ChamsColor:OnChanged(function(Value)
-        ESP.Settings.ChamsColor = Value
+        for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+            if ESPObjects[player] and ESPObjects[player].chams then
+                ESPObjects[player].chams.OutlineColor = Value
+            end
+        end
     end)
 
     ChamsTransparency:OnChanged(function(Value)
