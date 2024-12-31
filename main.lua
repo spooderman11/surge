@@ -20,9 +20,10 @@ end
 local ESP = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/esp.lua")
 local SpeedModule = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/speed.lua")
 local Aimbot = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/aimbot.lua")
+local FlyModule = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/fly.lua")
 
 -- Error checking
-if not ESP or not SpeedModule or not Aimbot then
+if not ESP or not SpeedModule or not Aimbot or not FlyModule then
     error("Failed to load one or more required modules!")
     return
 end
@@ -279,6 +280,43 @@ do
         Rounding = 2
     })
 
+    -- Add to Aimbot Settings section
+    local KeybindSettings = AimbotSection:AddSection("Keybind")
+
+    local KeybindMode = KeybindSettings:AddDropdown("KeybindMode", {
+        Title = "Keybind Mode",
+        Values = {"Toggle", "Hold"},
+        Default = "Toggle"
+    })
+
+    local AimbotKeybind = KeybindSettings:AddKeybind("AimbotKeybind", {
+        Title = "Aimbot Keybind",
+        Mode = KeybindMode.Value,
+        Default = "MouseButton2", -- Right mouse button
+        
+        Callback = function(Value)
+            if KeybindMode.Value == "Hold" then
+                AimbotToggle:SetValue(Value)
+            end
+        end,
+
+        ChangedCallback = function(New)
+            print("Aimbot keybind changed to:", New)
+        end
+    })
+
+    KeybindMode:OnChanged(function()
+        local currentKey = AimbotKeybind:GetState()
+        AimbotToggle:SetValue(false)
+        AimbotKeybind:SetValue(currentKey, KeybindMode.Value)
+    end)
+
+    AimbotKeybind:OnClick(function()
+        if KeybindMode.Value == "Toggle" then
+            AimbotToggle:SetValue(not AimbotToggle.Value)
+        end
+    end)
+
     -- Update handlers
     AimbotToggle:OnChanged(function(Value)
         Aimbot.Toggle(Value)
@@ -351,14 +389,16 @@ do
     end)
 end
 
--- Add Fly controls
+-- Replace existing Fly controls with this updated version
 do
-    local FlyEnabled = Tabs.Player:AddToggle("FlyEnabled", {
+    local FlySection = Tabs.Player:AddSection("Fly")
+    
+    local FlyEnabled = FlySection:AddToggle("FlyEnabled", {
         Title = "Enable Fly",
         Default = false
     })
 
-    local FlySpeed = Tabs.Player:AddSlider("FlySpeed", {
+    local FlySpeed = FlySection:AddSlider("FlySpeed", {
         Title = "Fly Speed",
         Default = 50,
         Min = 10,
@@ -366,10 +406,20 @@ do
         Rounding = 0
     })
 
+    local FlyKeybind = FlySection:AddKeybind("FlyKeybind", {
+        Title = "Toggle Fly",
+        Mode = "Toggle",
+        Default = "F",
+        
+        Callback = function(Value)
+            FlyEnabled:SetValue(not FlyEnabled.Value)
+        end
+    })
+
     FlyEnabled:OnChanged(function(Value)
         if Value then
-            FlyModule.SetSpeed(FlySpeed.Value)
             FlyModule.StartFlying()
+            FlyModule.SetSpeed(FlySpeed.Value)
         else
             FlyModule.StopFlying()
         end
