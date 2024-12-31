@@ -83,31 +83,55 @@ end
 local function CleanupESP(player)
     if ESPObjects[player] then
         for _, object in pairs(ESPObjects[player]) do
-            object:Remove()
+            if type(object) == "table" then
+                -- Handle corners
+                for _, corner in pairs(object) do
+                    pcall(function()
+                        if corner and corner.Remove then
+                            corner:Remove()
+                        end
+                    end)
+                end
+            else
+                -- Handle single objects
+                pcall(function()
+                    if object and object.Remove then
+                        object:Remove()
+                    end
+                end)
+            end
         end
         ESPObjects[player] = nil
     end
 end
 
 local function CleanupAllESP()
-    for player, objects in pairs(ESPObjects) do
-        CleanupESP(player)
+    for player, _ in pairs(ESPObjects) do
+        pcall(function()
+            CleanupESP(player)
+        end)
     end
 end
 
 local function UpdateESP(Options)
+    if not Options or not Options.ESPEnabled then return end
+    
+    -- Hide ESP if disabled
     if not Options.ESPEnabled.Value then
-        -- Hide all ESP objects
         for _, objects in pairs(ESPObjects) do
-            for _, object in pairs(objects) do
-                if type(object) == "table" then -- For corners
-                    for _, corner in pairs(object) do
-                        corner.Visible = false
+            pcall(function()
+                for _, object in pairs(objects) do
+                    if type(object) == "table" then
+                        for _, corner in pairs(object) do
+                            if corner and corner.Visible ~= nil then
+                                corner.Visible = false
+                            end
+                        end
+                    elseif object and object.Visible ~= nil then
+                        object.Visible = false
                     end
-                else
-                    object.Visible = false
                 end
-            end
+            end)
         end
         return
     end
@@ -317,10 +341,12 @@ local function CreateFOVCircle()
 end
 
 local function RemoveFOVCircle()
-    if FOVCircle then
-        FOVCircle:Remove()
-        FOVCircle = nil
-    end
+    pcall(function()
+        if FOVCircle then
+            FOVCircle:Remove()
+            FOVCircle = nil
+        end
+    end)
 end
 
 return {

@@ -120,21 +120,26 @@ do
     })
 end
 
--- ESP Update Loop
+-- ESP Update Loop with error handling
 game:GetService("RunService").RenderStepped:Connect(function()
-    ESP.UpdateESP(Options)
+    pcall(function()
+        ESP.UpdateESP(Options)
+    end)
 end)
 
--- Player cleanup handlers
+-- Player cleanup handlers with error handling
 game:GetService("Players").PlayerRemoving:Connect(function(player)
-    ESP.CleanupESP(player)
+    pcall(function()
+        ESP.CleanupESP(player)
+    end)
 end)
 
 game:GetService("Players").PlayerAdded:Connect(function(player)
-    -- Will be initialized in UpdateESP when needed
-    if ESPObjects[player] then
-        ESP.CleanupESP(player)
-    end
+    pcall(function()
+        if ESPObjects and ESPObjects[player] then
+            ESP.CleanupESP(player)
+        end
+    end)
 end)
 
 -- Clean all ESP when game ends or player teleports
