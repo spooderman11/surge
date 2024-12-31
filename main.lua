@@ -57,112 +57,6 @@ local Tabs = {
 
 local Options = Fluent.Options
 
--- ESP Settings
-do
-    local PlayerEspSection = Tabs.Esp:AddSection("Player ESP")
-    
-    local EspToggle = Tabs.Esp:AddToggle("PlayerESP", {
-        Title = "Player ESP",
-        Default = ESP.Config.Enabled -- Fix: Changed from .True to .Enabled
-    })
-
-    local ShowHeldToggle = Tabs.Esp:AddToggle("ShowHeldESP", {
-        Title = "Show Held",
-        Default = ESP.Config.ShowEquipped
-    })
-
-    local BoxToggle = Tabs.Esp:AddToggle("BoxESP", {
-        Title = "Box ESP",
-        Default = ESP.Config.BoxEnabled
-    })
-
-    local BoxColor = Tabs.Esp:AddColorpicker("BoxColor", {
-        Title = "Box Color",
-        Default = ESP.Config.BoxColor
-    })
-
-    local HealthBarToggle = Tabs.Esp:AddToggle("HealthBar", {
-        Title = "Health Bar",
-        Default = ESP.Config.HealthBarEnabled
-    })
-
-    local TextToggle = Tabs.Esp:AddToggle("NameESP", {
-        Title = "Name ESP",
-        Default = ESP.Config.TextEnabled
-    })
-
-    local TextColor = Tabs.Esp:AddColorpicker("TextColor", {
-        Title = "Text Color",
-        Default = ESP.Config.TextColor
-    })
-
-    local TextSize = Tabs.Esp:AddSlider("TextSize", {
-        Title = "Text Size",
-        Description = "Adjust ESP text size",
-        Default = ESP.Config.TextSize,
-        Min = 8,
-        Max = 24,
-        Rounding = 0
-    })
-
-    Options.PlayerESP = EspToggle
-    Options.ShowHeldESP = ShowHeldToggle
-    Options.BoxESP = BoxToggle
-    Options.BoxColor = BoxColor
-    Options.HealthBar = HealthBarToggle
-    Options.NameESP = TextToggle
-    Options.TextColor = TextColor
-    Options.TextSize = TextSize
-
-    EspToggle:OnChanged(function(Value)
-        ESP.Config.Enabled = Value
-        ESP:UpdateDrawing("all")
-    end)
-
-    BoxToggle:OnChanged(function(Value)
-        ESP.Config.BoxEnabled = Value
-        ESP:UpdateDrawing("box")
-    end)
-
-    ShowHeldToggle:OnChanged(function(Value)
-        ESP.Config.ShowEquipped = Value
-        ESP:UpdateDrawing("box")
-    end)
-
-    BoxColor:OnChanged(function(Value)
-        ESP.Config.BoxColor = Value
-        ESP:UpdateDrawing("box")
-    end)
-
-    HealthBarToggle:OnChanged(function(Value)
-        ESP.Config.HealthBarEnabled = Value
-        ESP:UpdateDrawing("health")
-    end)
-
-    TextToggle:OnChanged(function(Value)
-        ESP.Config.TextEnabled = Value
-        ESP:UpdateDrawing("text")
-    end)
-
-    TextColor:OnChanged(function(Value)
-        ESP.Config.TextColor = Value
-        ESP:UpdateDrawing("text")
-    end)
-
-    TextSize:OnChanged(function(Value)
-        ESP.Config.TextSize = Value
-        ESP:UpdateDrawing("text")
-    end)
-
-    Options.PlayerESP:SetValue(ESP.Config.Enabled)
-    Options.BoxESP:SetValue(ESP.Config.BoxEnabled)
-    Options.BoxColor:SetValue(ESP.Config.BoxColor)
-    Options.HealthBar:SetValue(ESP.Config.HealthBarEnabled)
-    Options.NameESP:SetValue(ESP.Config.TextEnabled)
-    Options.TextColor:SetValue(ESP.Config.TextColor)
-    Options.TextSize:SetValue(ESP.Config.TextSize)
-end
-
 -- Aimbot Settings
 do
     local AimbotSection = Tabs.Combat:AddSection("Aimbot Controls")
@@ -387,6 +281,111 @@ InterfaceManager:SetFolder("Surge")
 SaveManager:SetFolder("Surge/configs")
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
+
+do
+    local PlayerEspSection = Tabs.Esp:AddSection("Player ESP")
+    
+    local EspToggle = Tabs.Esp:AddToggle("PlayerESP", {
+        Title = "Player ESP",
+        Default = ESP.Config.Enabled -- Fix: Changed from .True to .Enabled
+    })
+
+    local ShowHeldToggle = Tabs.Esp:AddToggle("ShowHeldESP", {
+        Title = "Show Held",
+        Default = ESP.Config.ShowEquipped
+    })
+
+    local BoxToggle = Tabs.Esp:AddToggle("BoxESP", {
+        Title = "Box ESP",
+        Default = ESP.Config.BoxEnabled
+    })
+
+    local BoxColor = Tabs.Esp:AddColorpicker("BoxColor", {
+        Title = "Box Color",
+        Default = ESP.Config.BoxColor
+    })
+
+    local HealthBarToggle = Tabs.Esp:AddToggle("HealthBar", {
+        Title = "Health Bar",
+        Default = ESP.Config.HealthBarEnabled
+    })
+
+    local TextToggle = Tabs.Esp:AddToggle("NameESP", {
+        Title = "Name ESP",
+        Default = ESP.Config.TextEnabled
+    })
+
+    local TextColor = Tabs.Esp:AddColorpicker("TextColor", {
+        Title = "Text Color",
+        Default = ESP.Config.TextColor
+    })
+
+    local TextSize = Tabs.Esp:AddSlider("TextSize", {
+        Title = "Text Size",
+        Description = "Adjust ESP text size",
+        Default = ESP.Config.TextSize,
+        Min = 8,
+        Max = 24,
+        Rounding = 0
+    })
+
+    Options.PlayerESP = EspToggle
+    Options.ShowHeldESP = ShowHeldToggle
+    Options.BoxESP = BoxToggle
+    Options.BoxColor = BoxColor
+    Options.HealthBar = HealthBarToggle
+    Options.NameESP = TextToggle
+    Options.TextColor = TextColor
+    Options.TextSize = TextSize
+
+    EspToggle:OnChanged(function(Value)
+        ESP.Config.Enabled = Value
+        ESP:UpdateDrawing("all")
+    end)
+
+    BoxToggle:OnChanged(function(Value)
+        ESP.Config.BoxEnabled = Value
+        ESP:UpdateDrawing("box")
+    end)
+
+    ShowHeldToggle:OnChanged(function(Value)
+        ESP.Config.ShowEquipped = Value
+        ESP:UpdateDrawing("box")
+    end)
+
+    BoxColor:OnChanged(function(Value)
+        ESP.Config.BoxColor = Value
+        ESP:UpdateDrawing("box")
+    end)
+
+    HealthBarToggle:OnChanged(function(Value)
+        ESP.Config.HealthBarEnabled = Value
+        ESP:UpdateDrawing("health")
+    end)
+
+    TextToggle:OnChanged(function(Value)
+        ESP.Config.TextEnabled = Value
+        ESP:UpdateDrawing("text")
+    end)
+
+    TextColor:OnChanged(function(Value)
+        ESP.Config.TextColor = Value
+        ESP:UpdateDrawing("text")
+    end)
+
+    TextSize:OnChanged(function(Value)
+        ESP.Config.TextSize = Value
+        ESP:UpdateDrawing("text")
+    end)
+
+    Options.PlayerESP:SetValue(ESP.Config.Enabled)
+    Options.BoxESP:SetValue(ESP.Config.BoxEnabled)
+    Options.BoxColor:SetValue(ESP.Config.BoxColor)
+    Options.HealthBar:SetValue(ESP.Config.HealthBarEnabled)
+    Options.NameESP:SetValue(ESP.Config.TextEnabled)
+    Options.TextColor:SetValue(ESP.Config.TextColor)
+    Options.TextSize:SetValue(ESP.Config.TextSize)
+end
 
 Window:SelectTab(1)
 
