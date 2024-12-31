@@ -3,16 +3,30 @@ local RunService = game:GetService("RunService")
 
 local ESP = {
     Config = {
-        Enabled = true,
-        BoxEnabled = true,
+        Enabled = false,         -- Changed to false by default
+        BoxEnabled = false,      -- Changed to false by default
         BoxColor = Color3.fromRGB(255, 255, 255),
-        HealthBarEnabled = true,
-        TextEnabled = true,
+        HealthBarEnabled = false, -- Changed to false by default
+        TextEnabled = false,      -- Changed to false by default
         TextColor = Color3.fromRGB(255, 255, 255),
         TextSize = 14,
-        ShowEquipped = true  -- Add this new config option
+        ShowEquipped = false,     -- Changed to false by default
+        -- Add new tracer settings
+        TracerEnabled = false,
+        TracerColor = Color3.fromRGB(255, 255, 255),
+        TracerThickness = 1,
+        TracerTransparency = 1,
+        TracerPosition = "Down", -- "Up", "Middle", "Down", "Mouse"
+        -- Add FOV circle settings
+        FOVEnabled = false,
+        FOVColor = Color3.fromRGB(255, 255, 255),
+        FOVRadius = 100,
+        FOVThickness = 1,
+        FOVTransparency = 1,
+        FOVFollowMouse = false
     },
     PlayerData = {},
+    FOVCircle = nil,
     UpdateDrawing = function(self, drawingType)
         for _, drawings in pairs(self.PlayerData) do
             if drawingType == "text" or drawingType == "all" then
@@ -48,6 +62,14 @@ local ESP = {
     end
 }
 
+ESP.FOVCircle = Drawing.new("Circle")
+ESP.FOVCircle.Visible = false
+ESP.FOVCircle.Color = ESP.Config.FOVColor
+ESP.FOVCircle.Thickness = ESP.Config.FOVThickness
+ESP.FOVCircle.Transparency = ESP.Config.FOVTransparency
+ESP.FOVCircle.NumSides = 100
+ESP.FOVCircle.Radius = ESP.Config.FOVRadius
+
 local function HasRequiredBodyParts(character)
     local requiredParts = {"Head", "Torso", "HumanoidRootPart", "Right Arm", "Left Arm", "Right Leg", "Left Leg"}
     for _, partName in ipairs(requiredParts) do
@@ -77,7 +99,8 @@ local function CreateDrawings(player)
         HealthBarOutline = Drawing.new("Square"),
         NameText = Drawing.new("Text"),
         RobloxName = Drawing.new("Text"),
-        EquipText = Drawing.new("Text") -- New drawing for equipped items
+        EquipText = Drawing.new("Text"), -- New drawing for equipped items
+        Tracer = Drawing.new("Line")
     }
     
     -- Box settings
@@ -109,6 +132,12 @@ local function CreateDrawings(player)
     drawings.EquipText.Size = ESP.Config.TextSize
     drawings.EquipText.Outline = true
     drawings.EquipText.Visible = false
+    
+    -- Add tracer settings
+    drawings.Tracer.Visible = false
+    drawings.Tracer.Color = ESP.Config.TracerColor
+    drawings.Tracer.Thickness = ESP.Config.TracerThickness
+    drawings.Tracer.Transparency = ESP.Config.TracerTransparency
     
     ESP.PlayerData[player] = drawings
 end
@@ -145,6 +174,24 @@ local function GetIngameName(player)
 end
 
 local function UpdateESP()
+    -- Update FOV Circle
+    ESP.FOVCircle.Visible = ESP.Config.FOVEnabled
+    if ESP.Config.FOVEnabled then
+        if ESP.Config.FOVFollowMouse then
+            local mousePos = game:GetService("UserInputService"):GetMouseLocation()
+            ESP.FOVCircle.Position = mousePos
+        else
+            ESP.FOVCircle.Position = Vector2.new(
+                game.Workspace.CurrentCamera.ViewportSize.X / 2,
+                game.Workspace.CurrentCamera.ViewportSize.Y / 2
+            )
+        end
+        ESP.FOVCircle.Color = ESP.Config.FOVColor
+        ESP.FOVCircle.Radius = ESP.Config.FOVRadius
+        ESP.FOVCircle.Thickness = ESP.Config.FOVThickness
+        ESP.FOVCircle.Transparency = ESP.Config.FOVTransparency
+    end
+
     for player, drawings in pairs(ESP.PlayerData) do
         if player.Character 
             and player.Character:FindFirstChild("HumanoidRootPart") 
@@ -215,6 +262,35 @@ local function UpdateESP()
                         drawings.EquipText.Visible = false
                     end
                 end
+
+                -- Add tracer update logic
+                if ESP.Config.TracerEnabled and onScreen then
+                    local tracer = drawings.Tracer
+                    local startPos = Vector2.new()
+                    
+                    -- Calculate tracer start position
+                    if ESP.Config.TracerPosition == "Mouse" then
+                        startPos = game:GetService("UserInputService"):GetMouseLocation()
+                    else
+                        local viewportSize = game.Workspace.CurrentCamera.ViewportSize
+                        if ESP.Config.TracerPosition == "Up" then
+                            startPos = Vector2.new(viewportSize.X/2, 0)
+                        elseif ESP.Config.TracerPosition == "Middle" then
+                            startPos = Vector2.new(viewportSize.X/2, viewportSize.Y/2)
+                        else -- Down
+                            startPos = Vector2.new(viewportSize.X/2, viewportSize.Y)
+                        end
+                    end
+                    
+                    tracer.From = startPos
+                    tracer.To = Vector2.new(vector.X, vector.Y)
+                    tracer.Color = ESP.Config.TracerColor
+                    tracer.Thickness = ESP.Config.TracerThickness
+                    tracer.Transparency = ESP.Config.TracerTransparency
+                    tracer.Visible = true
+                else
+                    drawings.Tracer.Visible = false
+                end
             else
                 drawings.Box.Visible = false
                 drawings.HealthBar.Visible = false
@@ -222,6 +298,7 @@ local function UpdateESP()
                 drawings.NameText.Visible = false
                 drawings.RobloxName.Visible = false
                 drawings.EquipText.Visible = false
+                drawings.Tracer.Visible = false
             end
         else
             -- Hide ESP if character isn't fully loaded
@@ -231,7 +308,16 @@ local function UpdateESP()
             drawings.NameText.Visible = false
             drawings.RobloxName.Visible = false
             drawings.EquipText.Visible = false
+            drawings.Tracer.Visible = false
         end
+    end
+end
+
+local function CleanupESP()
+    -- ...existing cleanup code...
+    if ESP.FOVCircle then
+        ESP.FOVCircle:Remove()
+        ESP.FOVCircle = nil
     end
 end
 

@@ -385,6 +385,102 @@ do
     Options.NameESP:SetValue(ESP.Config.TextEnabled)
     Options.TextColor:SetValue(ESP.Config.TextColor)
     Options.TextSize:SetValue(ESP.Config.TextSize)
+
+    local TracerSection = Tabs.Esp:AddSection("Tracers")
+    
+    local TracerToggle = TracerSection:AddToggle("TracerESP", {
+        Title = "Enable Tracers",
+        Default = ESP.Config.TracerEnabled
+    })
+
+    local TracerPosition = TracerSection:AddDropdown("TracerPosition", {
+        Title = "Tracer Position",
+        Values = {"Up", "Middle", "Down", "Mouse"},
+        Default = ESP.Config.TracerPosition
+    })
+
+    local TracerColor = TracerSection:AddColorpicker("TracerColor", {
+        Title = "Tracer Color",
+        Default = ESP.Config.TracerColor
+    })
+
+    local TracerThickness = TracerSection:AddSlider("TracerThickness", {
+        Title = "Tracer Thickness",
+        Default = ESP.Config.TracerThickness,
+        Min = 1,
+        Max = 5,
+        Rounding = 1
+    })
+
+    local TracerTransparency = TracerSection:AddSlider("TracerTransparency", {
+        Title = "Tracer Transparency",
+        Default = ESP.Config.TracerTransparency,
+        Min = 0,
+        Max = 1,
+        Rounding = 2
+    })
+
+    local FOVSection = Tabs.Esp:AddSection("FOV Circle")
+
+    local FOVToggle = FOVSection:AddToggle("FOVEnabled", {
+        Title = "Show FOV Circle",
+        Default = ESP.Config.FOVEnabled
+    })
+
+    local FOVFollowMouse = FOVSection:AddToggle("FOVFollowMouse", {
+        Title = "Follow Mouse",
+        Default = ESP.Config.FOVFollowMouse
+    })
+
+    local FOVColor = FOVSection:AddColorpicker("FOVColor", {
+        Title = "FOV Color",
+        Default = ESP.Config.FOVColor
+    })
+
+    local FOVRadius = FOVSection:AddSlider("FOVRadius", {
+        Title = "FOV Radius",
+        Default = ESP.Config.FOVRadius,
+        Min = 0,
+        Max = 500,
+        Rounding = 0
+    })
+
+    -- Add callbacks for new controls
+    TracerToggle:OnChanged(function(Value)
+        ESP.Config.TracerEnabled = Value
+    end)
+
+    TracerPosition:OnChanged(function(Value)
+        ESP.Config.TracerPosition = Value
+    end)
+
+    TracerColor:OnChanged(function(Value)
+        ESP.Config.TracerColor = Value
+    end)
+
+    TracerThickness:OnChanged(function(Value)
+        ESP.Config.TracerThickness = Value
+    end)
+
+    TracerTransparency:OnChanged(function(Value)
+        ESP.Config.TracerTransparency = Value
+    end)
+
+    FOVToggle:OnChanged(function(Value)
+        ESP.Config.FOVEnabled = Value
+    end)
+
+    FOVFollowMouse:OnChanged(function(Value)
+        ESP.Config.FOVFollowMouse = Value
+    end)
+
+    FOVColor:OnChanged(function(Value)
+        ESP.Config.FOVColor = Value
+    end)
+
+    FOVRadius:OnChanged(function(Value)
+        ESP.Config.FOVRadius = Value
+    end)
 end
 
 Window:SelectTab(1)
