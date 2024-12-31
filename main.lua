@@ -1,4 +1,4 @@
-local VERSION = "S101.1"
+local VERSION = "S-101.1"
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -94,13 +94,6 @@ do
         Rounding = 0
     })
 
-    local FontStyle = Tabs.ESP:AddDropdown("FontStyle", {
-        Title = "Font Style",
-        Description = "Choose text font style",
-        Values = {"Default", "UI", "System", "Monospace", "Bold"},
-        Default = "Default"
-    })
-
     local HealthBarESP = Tabs.ESP:AddToggle("HealthBarESP", {
         Title = "Health Bar",
         Default = false
@@ -131,6 +124,80 @@ do
         Title = "FOV Color",
         Default = Color3.fromRGB(255, 255, 255)
     })
+
+    -- Remove FontStyle dropdown and add new customization options
+    local ESPCustomization = Tabs.ESP:AddSection("ESP Customization")
+
+    local BoxThickness = ESPCustomization:AddSlider("BoxThickness", {
+        Title = "Box Thickness",
+        Default = 1,
+        Min = 1,
+        Max = 5,
+        Rounding = 1
+    })
+
+    local BoxTransparency = ESPCustomization:AddSlider("BoxTransparency", {
+        Title = "Box Transparency",
+        Default = 1,
+        Min = 0,
+        Max = 1,
+        Rounding = 2
+    })
+
+    local TracerThickness = ESPCustomization:AddSlider("TracerThickness", {
+        Title = "Tracer Thickness",
+        Default = 1,
+        Min = 1,
+        Max = 5,
+        Rounding = 1
+    })
+
+    local TracerTransparency = ESPCustomization:AddSlider("TracerTransparency", {
+        Title = "Tracer Transparency",
+        Default = 1,
+        Min = 0,
+        Max = 1,
+        Rounding = 2
+    })
+
+    local CornerSize = ESPCustomization:AddSlider("CornerSize", {
+        Title = "Corner Size",
+        Description = "Size of corner ESP (% of box)",
+        Default = 0.2,
+        Min = 0.1,
+        Max = 0.5,
+        Rounding = 2
+    })
+
+    local TextOutline = ESPCustomization:AddToggle("TextOutline", {
+        Title = "Text Outline",
+        Default = true
+    })
+
+    -- Update callbacks for customization
+    BoxThickness:OnChanged(function(Value)
+        ESP.Settings.BoxThickness = Value
+    end)
+
+    BoxTransparency:OnChanged(function(Value)
+        ESP.Settings.BoxTransparency = Value
+    end)
+
+    TracerThickness:OnChanged(function(Value)
+        ESP.Settings.TracerThickness = Value
+    end)
+
+    TracerTransparency:OnChanged(function(Value)
+        ESP.Settings.TracerTransparency = Value
+    end)
+
+    CornerSize:OnChanged(function(Value)
+        ESP.Settings.CornerSize = Value
+    end)
+
+    TextOutline:OnChanged(function(Value)
+        ESP.Settings.TextOutline = Value
+    end)
 end
 
 -- ESP Update Loop with error handling

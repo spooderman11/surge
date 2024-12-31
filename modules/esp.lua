@@ -47,13 +47,26 @@ end
 local ESPObjects = {}
 local FOVCircle
 
+-- Add new customization options
+local ESPSettings = {
+    BoxThickness = 1,
+    BoxTransparency = 1,
+    TracerThickness = 1,
+    TracerTransparency = 1,
+    CornerSize = 0.2, -- Percentage of box size
+    TextSize = 13,
+    TextOutline = true,
+    HealthBarThickness = 2,
+    HealthBarOffset = 6,
+}
+
 local function CreateESP(player)
     local esp = Drawing.new("Text")
     esp.Visible = false
     esp.Center = true
     esp.Outline = true
-    esp.Font = FontStyles["Default"]
-    esp.Size = 13
+    esp.Font = 2 -- Default font
+    esp.Size = ESPSettings.TextSize
     esp.Color = Color3.new(1, 1, 1)
     return esp
 end
@@ -62,8 +75,8 @@ local function CreateBox()
     local box = Drawing.new("Square")
     box.Visible = false
     box.Color = Color3.new(1, 1, 1)
-    box.Thickness = 1
-    box.Transparency = 1
+    box.Thickness = ESPSettings.BoxThickness
+    box.Transparency = ESPSettings.BoxTransparency
     box.Filled = false
     return box
 end
@@ -72,7 +85,8 @@ local function CreateLine()
     local line = Drawing.new("Line")
     line.Visible = false
     line.Color = Color3.new(1, 1, 1)
-    line.Thickness = 1
+    line.Thickness = ESPSettings.TracerThickness
+    line.Transparency = ESPSettings.TracerTransparency
     return line
 end
 
@@ -391,5 +405,6 @@ return {
     CleanupAllESP = CleanupAllESP,  -- Add new function
     UpdateESP = UpdateESP,
     CreateFOVCircle = CreateFOVCircle,
-    RemoveFOVCircle = RemoveFOVCircle
+    RemoveFOVCircle = RemoveFOVCircle,
+    Settings = ESPSettings
 }
