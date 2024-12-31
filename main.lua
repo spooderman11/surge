@@ -395,8 +395,9 @@ do
 
     local TracerPosition = TracerSection:AddDropdown("TracerPosition", {
         Title = "Tracer Position",
-        Values = {"Up", "Middle", "Down", "Mouse"},
-        Default = ESP.Config.TracerPosition
+        Values = {"Down", "Middle", "Up", "Mouse"},
+        Default = "Down", -- Changed from number to string
+        Multi = false
     })
 
     local TracerColor = TracerSection:AddColorpicker("TracerColor", {
