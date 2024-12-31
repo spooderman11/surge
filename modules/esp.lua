@@ -46,13 +46,6 @@ end
 
 local ESPObjects = {}
 local FOVCircle
-local DistanceVisualizer = Drawing.new("Circle")
-DistanceVisualizer.Visible = false
-DistanceVisualizer.Color = Color3.fromRGB(255, 0, 0)
-DistanceVisualizer.Thickness = 1
-DistanceVisualizer.Transparency = 0.5
-DistanceVisualizer.NumSides = 100
-DistanceVisualizer.Filled = true
 
 -- Add new customization options
 local ESPSettings = {
@@ -60,12 +53,10 @@ local ESPSettings = {
     BoxTransparency = 1,
     TracerThickness = 1,
     TracerTransparency = 1,
-    CornerSize = 0.2, -- Percentage of box size
     TextSize = 13,
     TextOutline = true,
     HealthBarThickness = 2,
     HealthBarOffset = 6,
-    ShowDistanceVisualizer = true
 }
 
 local function CreateESP(player)
@@ -112,23 +103,11 @@ end
 local function CleanupESP(player)
     if ESPObjects[player] then
         for _, object in pairs(ESPObjects[player]) do
-            if type(object) == "table" then
-                -- Handle corners
-                for _, corner in pairs(object) do
-                    pcall(function()
-                        if corner and corner.Remove then
-                            corner:Remove()
-                        end
-                    end)
+            pcall(function()
+                if object and object.Remove then
+                    object:Remove()
                 end
-            else
-                -- Handle single objects
-                pcall(function()
-                    if object and object.Remove then
-                        object:Remove()
-                    end
-                end)
-            end
+            end)
         end
         ESPObjects[player] = nil
     end
@@ -257,26 +236,10 @@ local function UpdateESP(Options)
                     end
 
                     -- ESP Type handling
-                    if Options.BoxESP.Value then
-                        ESPObjects[player].box.Visible = true
+                    if Options.ESPType.Value == "Box" then
+                        ESPObjects[player].box.Visible = Options.BoxESP.Value
                     else
                         ESPObjects[player].box.Visible = false
-                    end
-
-                    -- Add distance visualizer update
-                    if ESPSettings.ShowDistanceVisualizer then
-                        DistanceVisualizer.Visible = Options.ESPEnabled.Value
-                        if Options.ESPEnabled.Value then
-                            local localPlayer = game:GetService("Players").LocalPlayer
-                            if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                local position = localPlayer.Character.HumanoidRootPart.Position
-                                local cameraPosition = game.Workspace.CurrentCamera.CFrame.Position
-                                local screenPos = game.Workspace.CurrentCamera:WorldToViewportPoint(position)
-                                
-                                DistanceVisualizer.Position = Vector2.new(screenPos.X, screenPos.Y)
-                                DistanceVisualizer.Radius = Options.ESPDistance.Value / 2 -- Scale down for better visualization
-                            end
-                        end
                     end
 
                     -- Health Bar
@@ -354,15 +317,6 @@ local function RemoveFOVCircle()
     end)
 end
 
-local function RemoveDistanceVisualizer()
-    pcall(function()
-        if DistanceVisualizer then
-            DistanceVisualizer:Remove()
-            DistanceVisualizer = nil
-        end
-    end)
-end
-
 return {
     InitESP = InitESP,
     CleanupESP = CleanupESP,
@@ -370,6 +324,5 @@ return {
     UpdateESP = UpdateESP,
     CreateFOVCircle = CreateFOVCircle,
     RemoveFOVCircle = RemoveFOVCircle,
-    RemoveDistanceVisualizer = RemoveDistanceVisualizer,
     Settings = ESPSettings
 }
