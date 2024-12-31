@@ -46,6 +46,13 @@ end
 
 local ESPObjects = {}
 local FOVCircle
+local DistanceVisualizer = Drawing.new("Circle")
+DistanceVisualizer.Visible = false
+DistanceVisualizer.Color = Color3.fromRGB(255, 0, 0)
+DistanceVisualizer.Thickness = 1
+DistanceVisualizer.Transparency = 0.5
+DistanceVisualizer.NumSides = 100
+DistanceVisualizer.Filled = true
 
 -- Add new customization options
 local ESPSettings = {
@@ -58,6 +65,7 @@ local ESPSettings = {
     TextOutline = true,
     HealthBarThickness = 2,
     HealthBarOffset = 6,
+    ShowDistanceVisualizer = true
 }
 
 local function CreateESP(player)
@@ -90,30 +98,10 @@ local function CreateLine()
     return line
 end
 
-local function CreateCorners()
-    local corners = {
-        Drawing.new("Line"),
-        Drawing.new("Line"),
-        Drawing.new("Line"),
-        Drawing.new("Line"),
-        Drawing.new("Line"),
-        Drawing.new("Line"),
-        Drawing.new("Line"),
-        Drawing.new("Line")
-    }
-    for _, corner in pairs(corners) do
-        corner.Visible = false
-        corner.Color = Color3.new(1, 1, 1)
-        corner.Thickness = 1
-    end
-    return corners
-end
-
 local function InitESP(player)
     ESPObjects[player] = {
         name = CreateESP(player),
         box = CreateBox(),
-        corners = CreateCorners(),
         tracer = CreateLine(),
         distance = CreateESP(player),
         healthBar = CreateBox(),
@@ -269,57 +257,24 @@ local function UpdateESP(Options)
                     end
 
                     -- ESP Type handling
-                    if Options.ESPType.Value == "Box" then
-                        ESPObjects[player].box.Visible = Options.BoxESP.Value
-                        -- Hide corners
-                        for _, corner in pairs(ESPObjects[player].corners) do
-                            corner.Visible = false
-                        end
-                    elseif Options.ESPType.Value == "Corner" then
+                    if Options.BoxESP.Value then
+                        ESPObjects[player].box.Visible = true
+                    else
                         ESPObjects[player].box.Visible = false
-                        if Options.BoxESP.Value then
-                            local corners = ESPObjects[player].corners
-                            local boxCoordinates = Utils.CalculateBox(character)
-                            if boxCoordinates then
-                                local size = boxCoordinates.TopRight - boxCoordinates.BottomLeft
-                                local cornerSize = math.min(size.X, size.Y) * 0.2
-                                local TL = boxCoordinates.BottomLeft
-                                local TR = Vector2.new(boxCoordinates.TopRight.X, boxCoordinates.BottomLeft.Y)
-                                local BL = Vector2.new(boxCoordinates.BottomLeft.X, boxCoordinates.TopRight.Y)
-                                local BR = boxCoordinates.TopRight
+                    end
 
-                                -- Top Left
-                                corners[1].From = TL
-                                corners[1].To = TL + Vector2.new(cornerSize, 0)
-                                corners[2].From = TL
-                                corners[2].To = TL + Vector2.new(0, cornerSize)
-
-                                -- Top Right
-                                corners[3].From = TR
-                                corners[3].To = TR + Vector2.new(-cornerSize, 0)
-                                corners[4].From = TR
-                                corners[4].To = TR + Vector2.new(0, cornerSize)
-
-                                -- Bottom Left
-                                corners[5].From = BL
-                                corners[5].To = BL + Vector2.new(cornerSize, 0)
-                                corners[6].From = BL
-                                corners[6].To = BL + Vector2.new(0, -cornerSize)
-
-                                -- Bottom Right
-                                corners[7].From = BR
-                                corners[7].To = BR + Vector2.new(-cornerSize, 0)
-                                corners[8].From = BR
-                                corners[8].To = BR + Vector2.new(0, -cornerSize)
-
-                                for _, corner in pairs(corners) do
-                                    corner.Visible = true
-                                    corner.Color = espColor
-                                end
-                            end
-                        else
-                            for _, corner in pairs(ESPObjects[player].corners) do
-                                corner.Visible = false
+                    -- Add distance visualizer update
+                    if ESPSettings.ShowDistanceVisualizer then
+                        DistanceVisualizer.Visible = Options.ESPEnabled.Value
+                        if Options.ESPEnabled.Value then
+                            local localPlayer = game:GetService("Players").LocalPlayer
+                            if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                                local position = localPlayer.Character.HumanoidRootPart.Position
+                                local cameraPosition = game.Workspace.CurrentCamera.CFrame.Position
+                                local screenPos = game.Workspace.CurrentCamera:WorldToViewportPoint(position)
+                                
+                                DistanceVisualizer.Position = Vector2.new(screenPos.X, screenPos.Y)
+                                DistanceVisualizer.Radius = Options.ESPDistance.Value / 2 -- Scale down for better visualization
                             end
                         end
                     end
@@ -399,6 +354,15 @@ local function RemoveFOVCircle()
     end)
 end
 
+local function RemoveDistanceVisualizer()
+    pcall(function()
+        if DistanceVisualizer then
+            DistanceVisualizer:Remove()
+            DistanceVisualizer = nil
+        end
+    end)
+end
+
 return {
     InitESP = InitESP,
     CleanupESP = CleanupESP,
@@ -406,5 +370,6 @@ return {
     UpdateESP = UpdateESP,
     CreateFOVCircle = CreateFOVCircle,
     RemoveFOVCircle = RemoveFOVCircle,
+    RemoveDistanceVisualizer = RemoveDistanceVisualizer,
     Settings = ESPSettings
 }

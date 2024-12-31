@@ -78,13 +78,6 @@ do
         Default = "Down"
     })
 
-    local ESPType = Tabs.ESP:AddDropdown("ESPType", {
-        Title = "ESP Style",
-        Description = "Choose ESP box style",
-        Values = {"Box", "Corner", "Off"},
-        Default = "Box"
-    })
-
     local FontSize = Tabs.ESP:AddSlider("FontSize", {
         Title = "Font Size",
         Description = "Size for name and distance ESP",
@@ -160,19 +153,21 @@ do
         Rounding = 2
     })
 
-    local CornerSize = ESPCustomization:AddSlider("CornerSize", {
-        Title = "Corner Size",
-        Description = "Size of corner ESP (% of box)",
-        Default = 0.2,
-        Min = 0.1,
-        Max = 0.5,
-        Rounding = 2
-    })
-
     local TextOutline = ESPCustomization:AddToggle("TextOutline", {
         Title = "Text Outline",
         Default = true
     })
+
+    -- Add Distance Visualizer toggle
+    local ShowDistanceVisualizer = ESPCustomization:AddToggle("ShowDistanceVisualizer", {
+        Title = "Show Distance Range",
+        Description = "Shows ESP render distance as a circle",
+        Default = true
+    })
+
+    ShowDistanceVisualizer:OnChanged(function(Value)
+        ESP.Settings.ShowDistanceVisualizer = Value
+    end)
 
     -- Update callbacks for customization
     BoxThickness:OnChanged(function(Value)
@@ -189,10 +184,6 @@ do
 
     TracerTransparency:OnChanged(function(Value)
         ESP.Settings.TracerTransparency = Value
-    end)
-
-    CornerSize:OnChanged(function(Value)
-        ESP.Settings.CornerSize = Value
     end)
 
     TextOutline:OnChanged(function(Value)
@@ -232,6 +223,7 @@ end)
 -- Cleanup on character events
 game.Players.LocalPlayer.CharacterRemoving:Connect(function()
     ESP.RemoveFOVCircle()
+    ESP.RemoveDistanceVisualizer()
     ESP.CleanupAllESP()
 end)
 
