@@ -1,4 +1,4 @@
-print("Hi from code 22")
+print("Cooking wit mula a mouth fulla mula | cooking with safari he gon catch u horny")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
