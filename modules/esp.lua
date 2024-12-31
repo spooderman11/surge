@@ -89,6 +89,12 @@ local function CleanupESP(player)
     end
 end
 
+local function CleanupAllESP()
+    for player, objects in pairs(ESPObjects) do
+        CleanupESP(player)
+    end
+end
+
 local function UpdateESP(Options)
     if not Options.ESPEnabled.Value then
         -- Hide all ESP objects
@@ -320,6 +326,7 @@ end
 return {
     InitESP = InitESP,
     CleanupESP = CleanupESP,
+    CleanupAllESP = CleanupAllESP,  -- Add new function
     UpdateESP = UpdateESP,
     CreateFOVCircle = CreateFOVCircle,
     RemoveFOVCircle = RemoveFOVCircle

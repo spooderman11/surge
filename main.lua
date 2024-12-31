@@ -125,13 +125,29 @@ game:GetService("RunService").RenderStepped:Connect(function()
     ESP.UpdateESP(Options)
 end)
 
--- Cleanup on player removal
+-- Player cleanup handlers
 game:GetService("Players").PlayerRemoving:Connect(function(player)
     ESP.CleanupESP(player)
 end)
 
+game:GetService("Players").PlayerAdded:Connect(function(player)
+    -- Will be initialized in UpdateESP when needed
+    if ESPObjects[player] then
+        ESP.CleanupESP(player)
+    end
+end)
+
+-- Clean all ESP when game ends or player teleports
+game:GetService("CoreGui").DescendantRemoving:Connect(function(descendant)
+    if descendant.Name == "MainGui" then
+        ESP.CleanupAllESP()
+    end
+end)
+
+-- Cleanup on character events
 game.Players.LocalPlayer.CharacterRemoving:Connect(function()
     ESP.RemoveFOVCircle()
+    ESP.CleanupAllESP()
 end)
 
 game.Players.LocalPlayer.CharacterAdded:Connect(function()
