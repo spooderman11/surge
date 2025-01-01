@@ -1,4 +1,4 @@
-print("Hi from code 22")
+print("Nigga")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -50,7 +50,7 @@ local ESP = {
                     drawings.Box.Color = self.Config.BoxColor
                     drawings.Box.Visible = self.Config.BoxEnabled -- Removed Enabled dependency
                 end
-            ends
+            end
             if drawingType == "health" or drawingType == "all" then
                 if drawings.HealthBar then
                     drawings.HealthBar.Visible = self.Config.HealthBarEnabled -- Removed Enabled dependency

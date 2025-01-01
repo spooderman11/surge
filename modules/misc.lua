@@ -125,7 +125,7 @@ end
     <function> Misc.JoinLowestServer()
     usage example:
     Misc.JoinLowestServer()
-
+blub blub blub blub
     Starts at 1 player and if there isnt one with that many it goes up and retrys
 ]]
 
