@@ -94,8 +94,7 @@ local function CreateDrawings(player)
         -- Add tracer
         Tracer = Drawing.new("Line")
     }
-    
-    -- Add FOV Circle (single instance for all players)
+
     if not ESP.FovCircle then
         ESP.FovCircle = Drawing.new("Circle")
         ESP.FovCircle.Thickness = 1

@@ -270,9 +270,9 @@ do
 end
 
 do
-    local TeleportationSection = Tabs.misc:AddSection("Teleportations")
+    local TeleportationSection = Tabs.Misc:AddSection("Teleportations")
 
-    Tabs.misc:AddButton({
+    Tabs.Misc:AddButton({
         Title = "Rejoin",
         Description = "Rejoins the exact server your in.",
         Callback = function()
@@ -283,7 +283,7 @@ do
                     {
                         Title = "Confirm",
                         Callback = function()
-                            MiscModule.Misc.Rejoin()
+                            Misc.Rejoin()
                         end
                     },
                     {
@@ -297,7 +297,7 @@ do
         end
     })
 
-    Tabs.misc:AddButton({
+    Tabs.Misc:AddButton({
         Title = "Server Hop",
         Description = "Switches to a new server.",
         Callback = function()
@@ -308,7 +308,7 @@ do
                     {
                         Title = "Confirm",
                         Callback = function()
-                            MiscModule.Serverhop.Rejoin()
+                            Misc.Serverhop()
                         end
                     },
                     {
@@ -322,7 +322,7 @@ do
         end
     })
 
-    Tabs.misc:AddButton({
+    Tabs.Misc:AddButton({
         Title = "Join Lowest Server",
         Description = "Joins the server with the lowest amount of players. ( May not work on Solara )",
         Callback = function()
@@ -333,7 +333,7 @@ do
                     {
                         Title = "Confirm",
                         Callback = function()
-                            MiscModule.JoinLowestServer.Rejoin()
+                            MiscModule.JoinLowestServer()
                         end
                     },
                     {
@@ -347,7 +347,7 @@ do
         end
     })
 
-    Tabs.misc:AddButton({
+    Tabs.Misc:AddButton({
         Title = "Join Highest Server",
         Description = "Joins the server with the Highest amount of players. ( May not work on Solara )",
         Callback = function()
@@ -358,7 +358,7 @@ do
                     {
                         Title = "Confirm",
                         Callback = function()
-                            MiscModule.JoinLowestServer.Rejoin()
+                             .JoinLowestServer()
                         end
                     },
                     {
