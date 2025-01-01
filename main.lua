@@ -283,7 +283,7 @@ do
                     {
                         Title = "Confirm",
                         Callback = function()
-                            Misc.Rejoin()
+                            MiscModule.Rejoin() -- Fixed: Changed Misc to MiscModule
                         end
                     },
                     {
@@ -308,7 +308,7 @@ do
                     {
                         Title = "Confirm",
                         Callback = function()
-                            Misc.Serverhop()
+                            MiscModule.Serverhop() -- Fixed: Changed Misc to MiscModule
                         end
                     },
                     {
@@ -358,7 +358,7 @@ do
                     {
                         Title = "Confirm",
                         Callback = function()
-                             .JoinLowestServer()
+                            MiscModule.JoinHighestServer() -- Fixed: Added MiscModule prefix
                         end
                     },
                     {
