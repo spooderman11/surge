@@ -1,10 +1,9 @@
-local VERSION = "S-101.2"
+local VERSION = "S-110.8"
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
--- Fix module loading with proper error handling
 local function loadModule(url)
     local success, result = pcall(function()
         return loadstring(game:HttpGet(url))()
@@ -16,13 +15,12 @@ local function loadModule(url)
     return result
 end
 
--- Load modules
 local ESP = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/esp.lua")
 local SpeedModule = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/speed.lua")
 local Aimbot = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/aimbot.lua")
 local FlyModule = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/fly.lua")
+local MiscModule = loadModule("https://raw.githubusercontent.com/spooderman11/surge/main/modules/misc.lua")
 
--- Add this after ESP module loading
 if not ESP then
     warn("ESP module failed to load!")
     return
@@ -31,7 +29,6 @@ local function kick(reason)
     game.Players.LocalPlayer:Kick(reason)
 end
 
--- Error checking
 if not ESP or not SpeedModule or not Aimbot or not FlyModule then
     kick("Failed to load one or more required modules!")
     return
@@ -42,7 +39,7 @@ local Window = Fluent:CreateWindow({
     SubTitle = "",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
-    Acrylic = true,
+    Acrylic = false,
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.RightControl
 })
@@ -57,12 +54,11 @@ local Tabs = {
 
 local Options = Fluent.Options
 
--- Aimbot Settings
 do
     local AimbotSection = Tabs.Combat:AddSection("Aimbot Controls")
     local TargetingSection = Tabs.Combat:AddSection("Targeting")
     local PredictionSection = Tabs.Combat:AddSection("Prediction")
-    local KeybindSection = Tabs.Combat:AddSection("Keybind Settings") -- Changed this line
+    local KeybindSection = Tabs.Combat:AddSection("Keybind Settings")
 
     local AimbotToggle = AimbotSection:AddToggle("AimbotToggle", {
         Title = "Enable Aimbot",
@@ -271,6 +267,110 @@ do
             FlyModule.SetSpeed(Value)
         end
     end)
+end
+
+do
+    local TeleportationSection = Tabs.misc:AddSection("Teleportations")
+
+    Tabs.misc:AddButton({
+        Title = "Rejoin",
+        Description = "Rejoins the exact server your in.",
+        Callback = function()
+            Window:Dialog({
+                Title = "Are You Sure?",
+                Content = "Pressing confirm will rejoin the server but make sure you have saved your progress / arent in any sort of combat.",
+                Buttons = {
+                    {
+                        Title = "Confirm",
+                        Callback = function()
+                            MiscModule.Misc.Rejoin()
+                        end
+                    },
+                    {
+                        Title = "Cancel",
+                        Callback = function()
+                            -- Do nothing
+                        end
+                    }
+                }
+            })
+        end
+    })
+
+    Tabs.misc:AddButton({
+        Title = "Server Hop",
+        Description = "Switches to a new server.",
+        Callback = function()
+            Window:Dialog({
+                Title = "Are You Sure?",
+                Content = "Pressing confirm will switch server so make sure you have saved your progress / arent in any sort of combat.",
+                Buttons = {
+                    {
+                        Title = "Confirm",
+                        Callback = function()
+                            MiscModule.Serverhop.Rejoin()
+                        end
+                    },
+                    {
+                        Title = "Cancel",
+                        Callback = function()
+                            -- Do nothing
+                        end
+                    }
+                }
+            })
+        end
+    })
+
+    Tabs.misc:AddButton({
+        Title = "Join Lowest Server",
+        Description = "Joins the server with the lowest amount of players. ( May not work on Solara )",
+        Callback = function()
+            Window:Dialog({
+                Title = "Are You Sure?",
+                Content = "Pressing confirm will switch server so make sure you have saved your progress / arent in any sort of combat.",
+                Buttons = {
+                    {
+                        Title = "Confirm",
+                        Callback = function()
+                            MiscModule.JoinLowestServer.Rejoin()
+                        end
+                    },
+                    {
+                        Title = "Cancel",
+                        Callback = function()
+                            -- Do nothing
+                        end
+                    }
+                }
+            })
+        end
+    })
+
+    Tabs.misc:AddButton({
+        Title = "Join Highest Server",
+        Description = "Joins the server with the Highest amount of players. ( May not work on Solara )",
+        Callback = function()
+            Window:Dialog({
+                Title = "Are You Sure?",
+                Content = "Pressing confirm will switch server so make sure you have saved your progress / arent in any sort of combat.",
+                Buttons = {
+                    {
+                        Title = "Confirm",
+                        Callback = function()
+                            MiscModule.JoinLowestServer.Rejoin()
+                        end
+                    },
+                    {
+                        Title = "Cancel",
+                        Callback = function()
+                            -- Do nothing
+                        end
+                    }
+                }
+            })
+        end
+    })
 end
 
 SaveManager:SetLibrary(Fluent)

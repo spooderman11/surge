@@ -1,4 +1,4 @@
-print("Cooking wit mula a mouth fulla mula | cooking with safari he gon catch u horny")
+print("Hi from code 22")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -50,7 +50,7 @@ local ESP = {
                     drawings.Box.Color = self.Config.BoxColor
                     drawings.Box.Visible = self.Config.BoxEnabled -- Removed Enabled dependency
                 end
-            end
+            ends
             if drawingType == "health" or drawingType == "all" then
                 if drawings.HealthBar then
                     drawings.HealthBar.Visible = self.Config.HealthBarEnabled -- Removed Enabled dependency
