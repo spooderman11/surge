@@ -204,132 +204,88 @@ function Misc.FindPlayer(partial)
     return nil
 end
 
--- Popular Scripts
-function Misc.LoadDex()
-    local dexScript = [[
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/BypassedDarkDex.lua"))()
-    ]]
-    return loadstring(dexScript)()
-end
-
-function Misc.LoadInfiniteYield()
-    local iyScript = [[
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-    ]]
-    return loadstring(iyScript)()
-end
-
--- Environment Functions
-function Misc.CheckExecutor()
-    local supported = {}
-    
-    supported.Synapse = syn and not KRNL_LOADED
-    supported.KRNL = KRNL_LOADED
-    supported.ScriptWare = getgenv().IS_SCRIPTWARE
-    supported.Fluxus = getgenv().IS_FLUXUS
-    
-    return supported
-end
-
-function Misc.IsSecure()
-    return (getgenv().secure_loaded or syn or KRNL_LOADED) and true or false
-end
-
--- Performance & Graphics
-function Misc.UnlockFPS()
-    local success, error = pcall(function()
-        setfpscap(999)
-    end)
-    return success
-end
-
-function Misc.RemoveEffects()
-    for _, v in pairs(game:GetDescendants()) do
-        if v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("SunRaysEffect") then
-            v:Destroy()
-        end
-    end
-    return true
-end
-
-function Misc.DisableParticles()
-    for _, v in pairs(game:GetDescendants()) do
-        if v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
-            v.Enabled = false
-        end
-    end
-    return true
-end
-
--- Character Utilities
-function Misc.Noclip(enabled)
-    local player = game:GetService("Players").LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    
-    if enabled then
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
+function Misc.InfiniteJump(enable)
+    local connection
+    if enable then
+        connection = game:GetService("UserInputService").JumpRequest:Connect(function()
+            game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+        end)
     else
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
+        if connection then connection:Disconnect() end
+    end
+    return connection
+end
+
+function Misc.NoClip(enable)
+    local connection
+    if enable then
+        connection = game:GetService("RunService").Stepped:Connect(function()
+            for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
             end
-        end
+        end)
+    else
+        if connection then connection:Disconnect() end
     end
+    return connection
 end
 
-function Misc.InvisibleCharacter()
-    local player = game:GetService("Players").LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local savePos = character.HumanoidRootPart.CFrame
-    
-    -- Load invisible character
-    local invisibleCharacter = game:GetObjects("rbxassetid://4819740796")[1]
-    invisibleCharacter.Parent = workspace
-    
-    -- Set position
-    local invisibleHRP = invisibleCharacter.HumanoidRootPart
-    invisibleHRP.CFrame = savePos
-    
-    -- Remove old character
-    character:Destroy()
-    
-    -- Set new character
-    invisibleCharacter.Parent = workspace
-    player.Character = invisibleCharacter
-    
+function Misc.FullBright()
+    local lighting = game:GetService("Lighting")
+    lighting.Ambient = Color3.fromRGB(255, 255, 255)
+    lighting.ColorShift_Bottom = Color3.fromRGB(255, 255, 255)
+    lighting.ColorShift_Top = Color3.fromRGB(255, 255, 255)
+    lighting.Brightness = 5
     return true
 end
 
--- Game Utilities
-function Misc.Screenshot()
-    if syn and syn.screenshot then
-        return syn.screenshot()
-    elseif KRNL_LOADED then
-        return screenshot()
-    end
-    return false
+function Misc.ChatSpam(message, interval)
+    local connection
+    connection = game:GetService("RunService").Heartbeat:Connect(function()
+        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
+        task.wait(interval)
+    end)
+    return connection
 end
 
-function Misc.CopyGameInfo()
-    local placeId = game.PlaceId
-    local jobId = game.JobId
-    local info = string.format("Place ID: %d\nJob ID: %s", placeId, jobId)
-    setclipboard(info)
+function Misc.RemoveFog()
+    local lighting = game:GetService("Lighting")
+    lighting.FogStart = 0
+    lighting.FogEnd = math.huge
+    lighting.Atmosphere.Density = 0
     return true
 end
 
--- Network Stats
-function Misc.GetPing()
-    local stats = game:GetService("Stats")
-    return stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+function Misc.ThirdPerson(enable)
+    if enable then
+        game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.Classic
+        game:GetService("Players").LocalPlayer.CameraMaxZoomDistance = 100
+        game:GetService("Players").LocalPlayer.CameraMinZoomDistance = 0.5
+    else
+        game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
+    end
 end
 
-function Misc.GetFPS()
-    return math.floor(1/game:GetService("RunService").RenderStepped:Wait())
+-- Featured Scripts loader functions
+function Misc.LoadDex()
+    local dexSource = [[
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/BypassedDarkDexV3.lua", true))()
+    ]]
+    loadstring(dexSource)()
+end
+
+function Misc.LoadIY()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+end
+
+function Misc.LoadSimpleSpyV3()
+    loadstring(game:HttpGet("https://github.com/exxtremestuffs/SimpleSpySource/raw/master/SimpleSpy.lua"))()
+end
+
+function Misc.LoadRemoteSpy()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/RemoteSpy.lua"))()
 end
 
 return Misc

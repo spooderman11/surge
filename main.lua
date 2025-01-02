@@ -467,99 +467,135 @@ do
 end
 
 do
-    local ScriptsSection = Tabs.Misc:AddSection("Featured Scripts")
+    -- Add after existing Misc sections
+    local MovementSection = Tabs.Misc:AddSection("Movement")
     
-    ScriptsSection:AddButton({
-        Title = "Dark Dex",
-        Description = "Load Dark Dex Explorer",
+    local InfiniteJumpToggle = MovementSection:AddToggle("InfiniteJump", {
+        Title = "Infinite Jump",
+        Default = false
+    })
+
+    local NoClipToggle = MovementSection:AddToggle("NoClip", {
+        Title = "No-Clip",
+        Default = false
+    })
+
+    local ThirdPersonToggle = MovementSection:AddToggle("ThirdPerson", {
+        Title = "Third Person",
+        Default = false
+    })
+
+    local VisualSection = Tabs.Misc:AddSection("Visual Enhancements")
+
+    VisualSection:AddButton({
+        Title = "Full Bright",
+        Description = "Removes darkness",
+        Callback = function()
+            MiscModule.FullBright()
+        end
+    })
+
+    VisualSection:AddButton({
+        Title = "Remove Fog",
+        Description = "Removes distance fog",
+        Callback = function()
+            MiscModule.RemoveFog()
+        end
+    })
+
+    local TrollSection = Tabs.Misc:AddSection("Troll Features")
+
+    local ChatSpamToggle = TrollSection:AddToggle("ChatSpam", {
+        Title = "Chat Spam",
+        Default = false
+    })
+
+    local ChatSpamMessage = TrollSection:AddInput("ChatSpamMessage", {
+        Title = "Spam Message",
+        Default = "surge.lua on top!",
+        Placeholder = "Enter message to spam"
+    })
+
+    local ChatSpamInterval = TrollSection:AddSlider("ChatSpamInterval", {
+        Title = "Spam Interval",
+        Default = 1,
+        Min = 0.1,
+        Max = 10,
+        Rounding = 1
+    })
+
+    local FeaturedScriptsSection = Tabs.Misc:AddSection("Featured Scripts")
+
+    FeaturedScriptsSection:AddButton({
+        Title = "Load Dex Explorer",
+        Description = "Game Explorer",
         Callback = function()
             MiscModule.LoadDex()
         end
     })
 
-    ScriptsSection:AddButton({
+    FeaturedScriptsSection:AddButton({
         Title = "Infinite Yield",
-        Description = "Load Infinite Yield Admin",
+        Description = "Admin Commands",
         Callback = function()
-            MiscModule.LoadInfiniteYield()
+            MiscModule.LoadIY()
         end
     })
 
-    local CharacterSection = Tabs.Misc:AddSection("Character")
-
-    local NoclipToggle = CharacterSection:AddToggle("Noclip", {
-        Title = "Noclip",
-        Default = false
+    FeaturedScriptsSection:AddButton({
+        Title = "Simple Spy V3",
+        Description = "Remote Spy",
+        Callback = function()
+            MiscModule.LoadSimpleSpyV3()
+        end
     })
 
-    NoclipToggle:OnChanged(function(Value)
-        MiscModule.Noclip(Value)
+    FeaturedScriptsSection:AddButton({
+        Title = "Remote Spy",
+        Description = "Alternative Remote Spy",
+        Callback = function()
+            MiscModule.LoadRemoteSpy()
+        end
+    })
+
+    -- Connection handlers
+    local infiniteJumpConnection
+    InfiniteJumpToggle:OnChanged(function(Value)
+        if Value then
+            infiniteJumpConnection = MiscModule.InfiniteJump(true)
+        else
+            if infiniteJumpConnection then
+                infiniteJumpConnection:Disconnect()
+            end
+        end
     end)
 
-    CharacterSection:AddButton({
-        Title = "Invisible Character",
-        Description = "Make your character invisible",
-        Callback = function()
-            MiscModule.InvisibleCharacter()
+    local noClipConnection
+    NoClipToggle:OnChanged(function(Value)
+        if Value then
+            noClipConnection = MiscModule.NoClip(true)
+        else
+            if noClipConnection then
+                noClipConnection:Disconnect()
+            end
         end
-    })
+    end)
 
-    local PerformanceSection = Tabs.Misc:AddSection("Performance")
+    ThirdPersonToggle:OnChanged(function(Value)
+        MiscModule.ThirdPerson(Value)
+    end)
 
-    PerformanceSection:AddButton({
-        Title = "Unlock FPS",
-        Description = "Remove FPS cap",
-        Callback = function()
-            MiscModule.UnlockFPS()
-        end
-    })
-
-    PerformanceSection:AddButton({
-        Title = "Remove Effects",
-        Description = "Remove post-processing effects",
-        Callback = function()
-            MiscModule.RemoveEffects()
-        end
-    })
-
-    PerformanceSection:AddButton({
-        Title = "Disable Particles",
-        Description = "Disable all particle effects",
-        Callback = function()
-            MiscModule.DisableParticles()
-        end
-    })
-
-    local UtilitySection = Tabs.Misc:AddSection("Utilities")
-
-    UtilitySection:AddButton({
-        Title = "Copy Game Info",
-        Description = "Copy Place ID and Job ID",
-        Callback = function()
-            MiscModule.CopyGameInfo()
-            Fluent:Notify({
-                Title = "Game Info",
-                Content = "Game information copied to clipboard!",
-                Duration = 3
-            })
-        end
-    })
-
-    local StatsSection = Tabs.Misc:AddSection("Network Stats")
-
-    local statsLabel = StatsSection:AddParagraph({
-        Title = "Network Statistics",
-        Content = "Loading..."
-    })
-
-    -- Update stats every second
-    task.spawn(function()
-        while task.wait(1) do
-            statsLabel:SetDesc(string.format(
-                "FPS: %d\nPing: %d ms",
-                MiscModule.GetFPS(),
-                MiscModule.GetPing()
-            ))
+    local chatSpamConnection
+    ChatSpamToggle:OnChanged(function(Value)
+        if Value then
+            chatSpamConnection = MiscModule.ChatSpam(
+                ChatSpamMessage.Value,
+                ChatSpamInterval.Value
+            )
+        else
+            if chatSpamConnection then
+                chatSpamConnection:Disconnect()
+            end
         end
     end)
 end
