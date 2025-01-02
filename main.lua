@@ -373,6 +373,99 @@ do
     })
 end
 
+do
+    local UtilitySection = Tabs.Misc:AddSection("Utility Features")
+
+    local AntiAFKToggle = UtilitySection:AddToggle("AntiAFK", {
+        Title = "Anti AFK",
+        Default = false
+    })
+
+    local antiAFKConnection = nil
+    AntiAFKToggle:OnChanged(function(Value)
+        if Value then
+            antiAFKConnection = MiscModule.AntiAFK()
+        else
+            if antiAFKConnection then
+                antiAFKConnection:Disconnect()
+                antiAFKConnection = nil
+            end
+        end
+    end)
+
+    UtilitySection:AddButton({
+        Title = "Remove Textures",
+        Description = "Removes all textures and decals for better performance",
+        Callback = function()
+            Window:Dialog({
+                Title = "Remove Textures",
+                Content = "This will remove all textures and decals. This cannot be undone without rejoining.",
+                Buttons = {
+                    {
+                        Title = "Confirm",
+                        Callback = function()
+                            MiscModule.DeleteTextures()
+                        end
+                    },
+                    {
+                        Title = "Cancel",
+                        Callback = function() end
+                    }
+                }
+            })
+        end
+    })
+
+    UtilitySection:AddButton({
+        Title = "Low Graphics",
+        Description = "Reduces graphics quality for better performance",
+        Callback = function()
+            Window:Dialog({
+                Title = "Low Graphics",
+                Content = "This will reduce graphics quality. This cannot be undone without rejoining.",
+                Buttons = {
+                    {
+                        Title = "Confirm",
+                        Callback = function()
+                            MiscModule.LowGraphics()
+                        end
+                    },
+                    {
+                        Title = "Cancel",
+                        Callback = function() end
+                    }
+                }
+            })
+        end
+    })
+
+    local PlayerFinderSection = Tabs.Misc:AddSection("Player Finder")
+
+    local PlayerInput = PlayerFinderSection:AddInput("PlayerFinder", {
+        Title = "Find Player",
+        Default = "",
+        Placeholder = "Enter partial name",
+        Numeric = false,
+        Finished = true,
+        Callback = function(Value)
+            local player = MiscModule.FindPlayer(Value)
+            if player then
+                Fluent:Notify({
+                    Title = "Player Found",
+                    Content = "Found player: " .. player.Name,
+                    Duration = 3
+                })
+            else
+                Fluent:Notify({
+                    Title = "Player Not Found",
+                    Content = "No player found matching: " .. Value,
+                    Duration = 3
+                })
+            end
+        end
+    })
+end
+
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()

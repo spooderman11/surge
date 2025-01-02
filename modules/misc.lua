@@ -1,10 +1,10 @@
 local Misc = {}
 
---[[
-    [DOCS FOR SERVERHOP]:
-    <function> Misc.Serverhop()
-    usage example:
-    Misc.Serverhop()
+--[[ 
+    [DOCS FOR SERVERHOP]: 
+    <function> Misc.Serverhop() 
+    usage example: 
+    Misc.Serverhop() 
 ]]--
 
 function Misc.Serverhop()
@@ -66,11 +66,11 @@ function Misc.Serverhop()
     return TeleportToRandomServer()
 end
 
---[[
-    [DOCS FOR REJOIN]:
-    <function> Misc.Rejoin()
-    usage example:
-    Misc.Rejoin()
+--[[ 
+    [DOCS FOR REJOIN]: 
+    <function> Misc.Rejoin() 
+    usage example: 
+    Misc.Rejoin() 
 ]]--
 
 function Misc.Rejoin()
@@ -88,14 +88,14 @@ function Misc.Rejoin()
     return true
 end
 
---[[
-    [DOCS FOR JOIN HIGHEST SERVER]:
-    <function> Misc.JoinHighestServer()
-    usage example:
-    Misc.JoinHighestServer()
+--[[ 
+    [DOCS FOR JOIN HIGHEST SERVER]: 
+    <function> Misc.JoinHighestServer() 
+    usage example: 
+    Misc.JoinHighestServer() 
 
-    Starts at 35 players and if there isnt one with that many it goes down and retrys
-]]
+    Starts at 35 players and if there isnt one with that many it goes down and retrys 
+]]--
 
 function Misc.JoinHighestServer()
     local TeleportService = game:GetService("TeleportService")
@@ -120,14 +120,14 @@ function Misc.JoinHighestServer()
     return true
 end
 
---[[
-    [DOCS FOR JOIN LOWEST SERVER]:
-    <function> Misc.JoinLowestServer()
-    usage example:
-    Misc.JoinLowestServer()
-blub blub blub blub
-    Starts at 1 player and if there isnt one with that many it goes up and retrys
-]]
+--[[ 
+    [DOCS FOR JOIN LOWEST SERVER]: 
+    <function> Misc.JoinLowestServer() 
+    usage example: 
+    Misc.JoinLowestServer() 
+blub blub blub blub 
+    Starts at 1 player and if there isnt one with that many it goes up and retrys 
+]]--
 
 function Misc.JoinLowestServer()
     local TeleportService = game:GetService("TeleportService")
@@ -150,6 +150,58 @@ function Misc.JoinLowestServer()
         return false
     end
     return true
+end
+
+function Misc.DeleteTextures()
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("Texture") or v:IsA("Decal") then
+            v:Destroy()
+        end
+    end
+    return true
+end
+
+function Misc.LowGraphics()
+    local lighting = game:GetService("Lighting")
+    lighting.GlobalShadows = false
+    lighting.FogEnd = 9e9
+    settings().Rendering.QualityLevel = 1
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("Part") or v:IsA("UnionOperation") then
+            v.Material = Enum.Material.Plastic
+            v.Reflectance = 0
+        elseif v:IsA("Explosion") then
+            v.BlastPressure = 1
+            v.BlastRadius = 1
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            v.Lifetime = NumberRange.new(0)
+        elseif v:IsA("Sparkles") then
+            v.Enabled = false
+        end
+    end
+    return true
+end
+
+function Misc.AntiAFK()
+    local VirtualUser = game:GetService("VirtualUser")
+    local Players = game:GetService("Players")
+    local connection
+    connection = Players.LocalPlayer.Idled:Connect(function()
+        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    end)
+    return connection
+end
+
+function Misc.FindPlayer(partial)
+    local players = game:GetService("Players"):GetPlayers()
+    for i, player in pairs(players) do
+        if player.Name:lower():sub(1, #partial) == partial:lower() then
+            return player
+        end
+    end
+    return nil
 end
 
 return Misc
