@@ -179,17 +179,55 @@ local function GetIngameName(player)
 end
 
 local function IsTeamMate(player)
+    -- Method 1: Direct team comparison
     if player.Team and Players.LocalPlayer.Team then
         return player.Team == Players.LocalPlayer.Team
     end
+    
+    -- Method 2: TeamColor value comparison
+    if player.TeamColor and Players.LocalPlayer.TeamColor then
+        return player.TeamColor.Value == Players.LocalPlayer.TeamColor.Value
+    end
+    
+    -- Method 3: Check parent team folders
+    local function getTeamFromFolder(plr)
+        for _, team in pairs(game:GetService("Teams"):GetChildren()) do
+            if team:IsA("Team") and plr:FindFirstChild("Folder") and plr.Folder.Parent == team then
+                return team
+            end
+        end
+        return nil
+    end
+    
+    local playerTeam = getTeamFromFolder(player)
+    local localTeam = getTeamFromFolder(Players.LocalPlayer)
+    
+    if playerTeam and localTeam then
+        return playerTeam == localTeam
+    end
+    
     return false
 end
 
 local function GetTeamColor(player)
+    -- Method 1: Team color
     if player.Team and player.Team.TeamColor then
         return player.Team.TeamColor.Color
     end
-    return ESP.Config.BoxColor -- fallback to default color
+    
+    -- Method 2: TeamColor value
+    if player.TeamColor then
+        return player.TeamColor.Color
+    end
+    
+    -- Method 3: Team folder color
+    for _, team in pairs(game:GetService("Teams"):GetChildren()) do
+        if team:IsA("Team") and player:FindFirstChild("Folder") and player.Folder.Parent == team then
+            return team.TeamColor.Color
+        end
+    end
+    
+    return ESP.Config.BoxColor -- fallback
 end
 
 local function UpdateESP()
