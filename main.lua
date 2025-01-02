@@ -466,6 +466,104 @@ do
     })
 end
 
+do
+    local ScriptsSection = Tabs.Misc:AddSection("Featured Scripts")
+    
+    ScriptsSection:AddButton({
+        Title = "Dark Dex",
+        Description = "Load Dark Dex Explorer",
+        Callback = function()
+            MiscModule.LoadDex()
+        end
+    })
+
+    ScriptsSection:AddButton({
+        Title = "Infinite Yield",
+        Description = "Load Infinite Yield Admin",
+        Callback = function()
+            MiscModule.LoadInfiniteYield()
+        end
+    })
+
+    local CharacterSection = Tabs.Misc:AddSection("Character")
+
+    local NoclipToggle = CharacterSection:AddToggle("Noclip", {
+        Title = "Noclip",
+        Default = false
+    })
+
+    NoclipToggle:OnChanged(function(Value)
+        MiscModule.Noclip(Value)
+    end)
+
+    CharacterSection:AddButton({
+        Title = "Invisible Character",
+        Description = "Make your character invisible",
+        Callback = function()
+            MiscModule.InvisibleCharacter()
+        end
+    })
+
+    local PerformanceSection = Tabs.Misc:AddSection("Performance")
+
+    PerformanceSection:AddButton({
+        Title = "Unlock FPS",
+        Description = "Remove FPS cap",
+        Callback = function()
+            MiscModule.UnlockFPS()
+        end
+    })
+
+    PerformanceSection:AddButton({
+        Title = "Remove Effects",
+        Description = "Remove post-processing effects",
+        Callback = function()
+            MiscModule.RemoveEffects()
+        end
+    })
+
+    PerformanceSection:AddButton({
+        Title = "Disable Particles",
+        Description = "Disable all particle effects",
+        Callback = function()
+            MiscModule.DisableParticles()
+        end
+    })
+
+    local UtilitySection = Tabs.Misc:AddSection("Utilities")
+
+    UtilitySection:AddButton({
+        Title = "Copy Game Info",
+        Description = "Copy Place ID and Job ID",
+        Callback = function()
+            MiscModule.CopyGameInfo()
+            Fluent:Notify({
+                Title = "Game Info",
+                Content = "Game information copied to clipboard!",
+                Duration = 3
+            })
+        end
+    })
+
+    local StatsSection = Tabs.Misc:AddSection("Network Stats")
+
+    local statsLabel = StatsSection:AddParagraph({
+        Title = "Network Statistics",
+        Content = "Loading..."
+    })
+
+    -- Update stats every second
+    task.spawn(function()
+        while task.wait(1) do
+            statsLabel:SetDesc(string.format(
+                "FPS: %d\nPing: %d ms",
+                MiscModule.GetFPS(),
+                MiscModule.GetPing()
+            ))
+        end
+    end)
+end
+
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()
