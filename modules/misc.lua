@@ -258,16 +258,6 @@ function Misc.RemoveFog()
     return true
 end
 
-function Misc.ThirdPerson(enable)
-    if enable then
-        game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.Classic
-        game:GetService("Players").LocalPlayer.CameraMaxZoomDistance = 100
-        game:GetService("Players").LocalPlayer.CameraMinZoomDistance = 0.5
-    else
-        game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
-    end
-end
-
 -- Featured Scripts loader functions
 function Misc.LoadDex()
     local dexSource = [[

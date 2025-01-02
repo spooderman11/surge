@@ -47,7 +47,7 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Combat = Window:AddTab({ Title = "Combat", Icon = "crosshair" }),
     Esp = Window:AddTab({ Title = "Esp", Icon = "eye" }),
-    Player = Window:AddTab({ Title = "Player", Icon = "user-round" }),
+    Player = Window:AddTab({ Title = "Player", Icon = "user" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "folder-open" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
@@ -480,10 +480,7 @@ do
         Default = false
     })
 
-    local ThirdPersonToggle = MovementSection:AddToggle("ThirdPerson", {
-        Title = "Third Person",
-        Default = false
-    })
+    -- Remove ThirdPersonToggle and its OnChanged handler
 
     local VisualSection = Tabs.Misc:AddSection("Visual Enhancements")
 
@@ -581,9 +578,7 @@ do
         end
     end)
 
-    ThirdPersonToggle:OnChanged(function(Value)
-        MiscModule.ThirdPerson(Value)
-    end)
+    -- Remove ThirdPersonToggle:OnChanged handler
 
     local chatSpamConnection
     ChatSpamToggle:OnChanged(function(Value)
@@ -615,6 +610,21 @@ do
     local EspToggle = Tabs.Esp:AddToggle("PlayerESP", {
         Title = "Player ESP",
         Default = ESP.Config.Enabled -- Fix: Changed from .True to .Enabled
+    })
+
+    local TeamCheckToggle = Tabs.Esp:AddToggle("TeamcheckESP", {
+        Title = "Team Check",
+        Default = ESP.Config.TeamCheck
+    })
+
+    local TeamColorToggle = Tabs.Esp:AddToggle("TeamcolorESP", {
+        Title = "Team Color",
+        Default = ESP.Config.TeamColor
+    })
+
+    local ShowTeammatesToggle = Tabs.Esp:AddToggle("ShowteammatesESP", {
+        Title = "Show Teammates",
+        Default = ESP.Config.ShowTeammates
     })
 
     local ShowHeldToggle = Tabs.Esp:AddToggle("ShowHeldESP", {
@@ -721,6 +731,9 @@ do
     })
 
     Options.PlayerESP = EspToggle
+    Options.TeamcheckESP = TeamCheckToggle 
+    Options.TeamcolorESP = TeamColorToggle
+    Options.ShowteammatesESP = ShowTeammatesToggle
     Options.ShowHeldESP = ShowHeldToggle
     Options.BoxESP = BoxToggle
     Options.BoxColor = BoxColor

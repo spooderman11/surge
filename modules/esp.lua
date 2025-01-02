@@ -24,6 +24,10 @@ local ESP = {
         FovFilled = false,
         FovTransparency = 1,
         FovFollowMouse = false, -- Add this new config option
+        -- Team check settings
+        TeamCheck = false,
+        TeamColor = false,
+        ShowTeammates = true,
     },
     PlayerData = {},
     UpdateDrawing = function(self, drawingType)
@@ -174,6 +178,20 @@ local function GetIngameName(player)
     return player.Name -- Fallback to regular name if no valid model found
 end
 
+local function IsTeamMate(player)
+    if player.Team and Players.LocalPlayer.Team then
+        return player.Team == Players.LocalPlayer.Team
+    end
+    return false
+end
+
+local function GetTeamColor(player)
+    if player.Team and player.Team.TeamColor then
+        return player.Team.TeamColor.Color
+    end
+    return ESP.Config.BoxColor -- fallback to default color
+end
+
 local function UpdateESP()
     -- Update FOV Circle
     if ESP.FovCircle then
@@ -201,6 +219,16 @@ local function UpdateESP()
     -- Update ESP for all players
     for player, drawings in pairs(ESP.PlayerData) do
         if player and player.Parent and drawings then -- Check if player still exists
+            -- Add team check
+            local isTeammate = IsTeamMate(player)
+            if ESP.Config.TeamCheck and isTeammate and not ESP.Config.ShowTeammates then
+                -- Hide ESP for teammates if TeamCheck is enabled and ShowTeammates is false
+                for _, drawing in pairs(drawings) do
+                    drawing.Visible = false
+                end
+                continue
+            end
+
             local character = player.Character
             if character and 
                character:FindFirstChild("HumanoidRootPart") and 
@@ -229,7 +257,7 @@ local function UpdateESP()
                     if onScreen then
                         drawings.Tracer.From = tracerStart
                         drawings.Tracer.To = Vector2.new(vector.X, vector.Y)
-                        drawings.Tracer.Color = ESP.Config.TracerColor
+                        drawings.Tracer.Color = ESP.Config.TeamColor and isTeammate and GetTeamColor(player) or ESP.Config.TracerColor
                         drawings.Tracer.Thickness = ESP.Config.TracerThickness
                         drawings.Tracer.Visible = true
                     else
@@ -246,11 +274,14 @@ local function UpdateESP()
                     local height = math.abs(topPosition.Y - bottomPosition.Y)
                     local width = height * 0.6
 
+                    -- Determine color based on team settings
+                    local espColor = ESP.Config.TeamColor and isTeammate and GetTeamColor(player) or ESP.Config.BoxColor
+
                     -- Update box if enabled
                     if ESP.Config.BoxEnabled then
                         drawings.Box.Size = Vector2.new(width, height)
                         drawings.Box.Position = Vector2.new(vector.X - width / 2, vector.Y - height / 2)
-                        drawings.Box.Color = ESP.Config.BoxColor
+                        drawings.Box.Color = espColor
                         drawings.Box.Visible = true
                     else
                         drawings.Box.Visible = false
@@ -281,13 +312,13 @@ local function UpdateESP()
                         local ingameName = GetIngameName(player)
                         
                         drawings.NameText.Position = Vector2.new(vector.X, vector.Y - height / 2 - 15)
-                        drawings.NameText.Color = ESP.Config.TextColor
+                        drawings.NameText.Color = ESP.Config.TeamColor and isTeammate and GetTeamColor(player) or ESP.Config.TextColor
                         drawings.NameText.Text = ingameName
                         drawings.NameText.Size = ESP.Config.TextSize
                         drawings.NameText.Visible = true
 
                         drawings.RobloxName.Position = Vector2.new(vector.X, vector.Y + height / 2 + 5)
-                        drawings.RobloxName.Color = ESP.Config.TextColor
+                        drawings.RobloxName.Color = ESP.Config.TeamColor and isTeammate and GetTeamColor(player) or ESP.Config.TextColor
                         drawings.RobloxName.Text = "@" .. player.Name
                         drawings.RobloxName.Size = ESP.Config.TextSize
                         drawings.RobloxName.Visible = true
