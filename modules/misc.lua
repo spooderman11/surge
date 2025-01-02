@@ -278,4 +278,112 @@ function Misc.LoadRemoteSpy()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/RemoteSpy.lua"))()
 end
 
+-- Character modifications
+function Misc.SetWalkSpeed(value)
+    local player = game:GetService("Players").LocalPlayer
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = value
+    end
+end
+
+function Misc.SetJumpPower(value)
+    local player = game:GetService("Players").LocalPlayer
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.JumpPower = value
+    end
+end
+
+function Misc.SetHipHeight(value)
+    local player = game:GetService("Players").LocalPlayer
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.HipHeight = value
+    end
+end
+
+-- View modification
+function Misc.Freecam(enable)
+    local connection
+    if enable then
+        -- Simple freecam implementation
+        local camera = workspace.CurrentCamera
+        local player = game:GetService("Players").LocalPlayer
+        local userInputService = game:GetService("UserInputService")
+        
+        local freecamPos = camera.CFrame
+        local speed = 1
+        
+        connection = game:GetService("RunService").RenderStepped:Connect(function()
+            local delta = userInputService:GetMouseDelta()
+            local look = Vector2.new(delta.X, delta.Y) * 0.5
+            
+            freecamPos = CFrame.new(freecamPos.Position) * 
+                        CFrame.Angles(0, -look.X * 0.01, 0) * 
+                        CFrame.Angles(-look.Y * 0.01, 0, 0) * 
+                        freecamPos.Rotation
+            
+            if userInputService:IsKeyDown(Enum.KeyCode.W) then
+                freecamPos = freecamPos * CFrame.new(0, 0, -speed)
+            end
+            if userInputService:IsKeyDown(Enum.KeyCode.S) then
+                freecamPos = freecamPos * CFrame.new(0, 0, speed)
+            end
+            if userInputService:IsKeyDown(Enum.KeyCode.A) then
+                freecamPos = freecamPos * CFrame.new(-speed, 0, 0)
+            end
+            if userInputService:IsKeyDown(Enum.KeyCode.D) then
+                freecamPos = freecamPos * CFrame.new(speed, 0, 0)
+            end
+            if userInputService:IsKeyDown(Enum.KeyCode.Space) then
+                freecamPos = freecamPos * CFrame.new(0, speed, 0)
+            end
+            if userInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+                freecamPos = freecamPos * CFrame.new(0, -speed, 0)
+            end
+            
+            camera.CFrame = freecamPos
+        end)
+    else
+        if connection then connection:Disconnect() end
+    end
+    return connection
+end
+
+-- Game enhancements
+function Misc.EnableShiftLock()
+    local player = game:GetService("Players").LocalPlayer
+    if player.DevEnableMouseLock then
+        player.DevEnableMouseLock = true
+    end
+end
+
+function Misc.RainbowCharacter(enable)
+    local connection
+    if enable then
+        connection = game:GetService("RunService").RenderStepped:Connect(function()
+            local player = game:GetService("Players").LocalPlayer
+            if player.Character then
+                for _, part in pairs(player.Character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+                    end
+                end
+            end
+        end)
+    else
+        if connection then connection:Disconnect() end
+    end
+    return connection
+end
+
+-- Visual effects
+function Misc.SetTimeOfDay(time)
+    local lighting = game:GetService("Lighting")
+    lighting.TimeOfDay = time
+end
+
+function Misc.ToggleShadows(enable)
+    local lighting = game:GetService("Lighting")
+    lighting.GlobalShadows = enable
+end
+
 return Misc

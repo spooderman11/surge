@@ -595,6 +595,112 @@ do
     end)
 end
 
+do
+    local CharacterSection = Tabs.Player:AddSection("Character Modifications")
+    
+    local WalkSpeedSlider = CharacterSection:AddSlider("WalkSpeed", {
+        Title = "Walk Speed",
+        Default = 16,
+        Min = 16,
+        Max = 500,
+        Rounding = 0,
+        Callback = function(Value)
+            MiscModule.SetWalkSpeed(Value)
+        end
+    })
+
+    local JumpPowerSlider = CharacterSection:AddSlider("JumpPower", {
+        Title = "Jump Power",
+        Default = 50,
+        Min = 50,
+        Max = 500,
+        Rounding = 0,
+        Callback = function(Value)
+            MiscModule.SetJumpPower(Value)
+        end
+    })
+
+    local HipHeightSlider = CharacterSection:AddSlider("HipHeight", {
+        Title = "Hip Height",
+        Default = 0,
+        Min = 0,
+        Max = 50,
+        Rounding = 1,
+        Callback = function(Value)
+            MiscModule.SetHipHeight(Value)
+        end
+    })
+
+    local ViewSection = Tabs.Player:AddSection("View Modifications")
+    
+    local FreecamToggle = ViewSection:AddToggle("Freecam", {
+        Title = "Enable Freecam",
+        Default = false
+    })
+
+    local freecamConnection
+    FreecamToggle:OnChanged(function(Value)
+        if Value then
+            freecamConnection = MiscModule.Freecam(true)
+        else
+            if freecamConnection then
+                freecamConnection:Disconnect()
+            end
+        end
+    end)
+
+    local VisualEffectsSection = Tabs.Misc:AddSection("Visual Effects")
+
+    local TimeOfDay = VisualEffectsSection:AddDropdown("TimeOfDay", {
+        Title = "Time of Day",
+        Values = {"Day", "Night", "Sunset", "Midnight"},
+        Default = "Day",
+        Callback = function(Value)
+            local times = {
+                Day = "12:00:00",
+                Night = "20:00:00",
+                Sunset = "17:30:00",
+                Midnight = "00:00:00"
+            }
+            MiscModule.SetTimeOfDay(times[Value])
+        end
+    })
+
+    local ShadowsToggle = VisualEffectsSection:AddToggle("Shadows", {
+        Title = "Enable Shadows",
+        Default = true,
+        Callback = function(Value)
+            MiscModule.ToggleShadows(Value)
+        end
+    })
+
+    local RainbowToggle = VisualEffectsSection:AddToggle("RainbowCharacter", {
+        Title = "Rainbow Character",
+        Default = false
+    })
+
+    local rainbowConnection
+    RainbowToggle:OnChanged(function(Value)
+        if Value then
+            rainbowConnection = MiscModule.RainbowCharacter(true)
+        else
+            if rainbowConnection then
+                rainbowConnection:Disconnect()
+            end
+        end
+    end)
+
+    local GameEnhancementsSection = Tabs.Misc:AddSection("Game Enhancements")
+
+    GameEnhancementsSection:AddButton({
+        Title = "Enable Shift Lock",
+        Description = "Forces shift lock to be enabled",
+        Callback = function()
+            MiscModule.EnableShiftLock()
+        end
+    })
+end
+
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()

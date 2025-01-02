@@ -1,4 +1,4 @@
-print("Nigga")
+print("Esp Started loading")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -394,7 +394,7 @@ local function UpdateESP()
         end
     end
 end
-
+print("Esp Finished loading")
 -- Clean up FOV Circle when ESP is destroyed
 local function CleanupESP()
     if ESP.FovCircle then
